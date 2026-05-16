@@ -34,8 +34,10 @@ No runtime `static/` directory is required in consuming binaries.
 With Axum, enable the `axum` feature and mount the optional router:
 
 ```rust
-let app = axum::Router::new()
-    .nest("/static/wavefunk", wavefunk_ui::axum::asset_router());
+let app = axum::Router::new().nest(
+    "/static/wavefunk",
+    wavefunk_ui::axum::asset_router(),
+);
 ```
 
 Templates can use:
@@ -57,7 +59,7 @@ let htmx = wavefunk_ui::assets::get("/static/wavefunk/js/htmx.min.js").unwrap();
 
 Framework adapters use `assets::CACHE_CONTROL`, currently `public, max-age=0, must-revalidate`, so deployments can refresh unchanged asset paths safely.
 
-The vendored htmx and htmx SSE assets are covered by `LICENSES.htmx.txt`. The Wave Funk CSS, JavaScript helper, and fonts are distributed with this crate under the package license.
+The vendored htmx and htmx SSE assets are covered by `LICENSES.htmx.txt`. The embedded Martian fonts are covered by `LICENSES.fonts.txt`. The Wave Funk CSS and JavaScript helper are distributed with this crate under the package license.
 
 ## Component API Contract
 
@@ -73,6 +75,7 @@ Component constructors follow a consistent pattern:
 Askama escapes normal text and attribute values. Use `HtmlAttr` helpers for common htmx attributes:
 
 ```rust
+use askama::Template;
 use wavefunk_ui::components::{Button, HtmlAttr};
 
 let attrs = [
@@ -87,6 +90,7 @@ let html = button.render()?;
 Any slot that must contain already-rendered markup is explicit:
 
 ```rust
+use askama::Template;
 use wavefunk_ui::components::{Field, TrustedHtml};
 
 let control = TrustedHtml::new(r#"<input class="wf-input" name="email">"#);
@@ -146,3 +150,13 @@ paths = [
 ```
 
 Do not commit the local path override. Release and CI should resolve the published crate from crates.io.
+
+## Release Readiness
+
+Release notes live in `CHANGELOG.md`; publish steps and versioning rules live in `RELEASE.md`. Woodpecker checks live in `.woodpecker/ci.yml`, and tag-based publishing lives in `.woodpecker/release.yml`.
+
+Before publishing, run:
+
+```bash
+direnv exec . just release-check
+```

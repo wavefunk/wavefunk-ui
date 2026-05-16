@@ -1,0 +1,32 @@
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+  - event: manual
+
+clone:
+  git:
+    image: docker.io/woodpeckerci/plugin-git:2.9.0
+    settings:
+      partial: true
+      depth: 1
+      lfs: false
+      recursive: false
+
+steps:
+  - name: verify
+    image: git.wavefunk.io/wavefunk/ci-rust:nightly-2026-01-05
+    pull: true
+    environment:
+      CARGO_HOME: /woodpecker-cache/cargo
+      CARGO_TARGET_DIR: /woodpecker-cache/target
+      SCCACHE_DIR: /woodpecker-cache/sccache
+    volumes:
+      - wavefunk-ui-ci-cache:/woodpecker-cache
+    commands:
+      - mkdir -p /woodpecker-cache/cargo /woodpecker-cache/target /woodpecker-cache/sccache
+      - cargo fmt --check
+      - cargo test --all-features --locked
+      - cargo clippy --all-features --all-targets --locked -- -D warnings
+      - cargo package --allow-dirty --locked
+      - cargo publish --dry-run --locked --allow-dirty
