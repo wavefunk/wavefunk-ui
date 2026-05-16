@@ -1,0 +1,9 @@
+<div class="wf-btn-split"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{{ action }}
+{%- match menu.href -%}
+{%- when Some with (url) -%}
+<a class="wf-btn caret" href="{{ url }}"{% for attr in menu.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ menu.label }}</a>
+{%- when None -%}
+<button class="wf-btn caret" type="{{ menu.button_type }}"{% if menu.disabled %} disabled{% endif %}{% for attr in menu.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ menu.label }}</button>
+{%- endmatch -%}
+</div>

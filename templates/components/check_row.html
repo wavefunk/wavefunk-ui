@@ -1,0 +1,4 @@
+<label class="wf-check-row">
+  <input class="wf-check" type="{{ self.input_type() }}" name="{{ name }}" value="{{ value }}"{% if checked %} checked{% endif %}{% if disabled %} disabled{% endif %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <span>{{ label }}</span>
+</label>

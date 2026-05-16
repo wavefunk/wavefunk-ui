@@ -1,0 +1,5 @@
+<select class="{{ self.class_name() }}" name="{{ name }}"{% if disabled %} disabled{% endif %}{% if required %} required{% endif %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{%- for option in options -%}
+<option value="{{ option.value }}"{% if option.selected %} selected{% endif %}{% if option.disabled %} disabled{% endif %}>{{ option.label }}</option>
+{%- endfor -%}
+</select>

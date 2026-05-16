@@ -1,0 +1,13 @@
+<div class="wf-input-group"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{%- match prefix -%}
+{%- when Some with (text) -%}
+<span class="wf-input-addon">{{ text }}</span>
+{%- when None -%}
+{%- endmatch -%}
+{{ control_html }}
+{%- match suffix -%}
+{%- when Some with (text) -%}
+<span class="wf-input-addon">{{ text }}</span>
+{%- when None -%}
+{%- endmatch -%}
+</div>

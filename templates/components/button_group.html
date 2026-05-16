@@ -1,0 +1,5 @@
+<div class="wf-btn-group"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{%- for button in buttons -%}
+{{ button }}
+{%- endfor -%}
+</div>
