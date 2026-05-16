@@ -1,0 +1,14 @@
+<div class="wf-menu">
+{%- for item in items -%}
+  {%- if item.kind == MenuItemKind::Separator -%}
+  <div class="wf-menu-sep"></div>
+  {%- else -%}
+    {%- match item.href -%}
+    {%- when Some with (href) -%}
+    <a class="{{ item.class_name() }}" href="{{ href }}"{% if item.disabled %} aria-disabled="true"{% endif %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</a>
+    {%- when None -%}
+    <button class="{{ item.class_name() }}" type="button"{% if item.disabled %} disabled{% endif %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</button>
+    {%- endmatch -%}
+  {%- endif -%}
+{%- endfor -%}
+</div>

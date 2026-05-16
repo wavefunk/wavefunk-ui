@@ -1,0 +1,11 @@
+<div class="{{ self.class_name() }}">
+  <span class="wf-callout-bar"></span>
+  <div>
+    {%- match title -%}
+    {%- when Some with (text) -%}
+    <span class="wf-callout-k">{{ text }}</span>
+    {%- when None -%}
+    {%- endmatch -%}
+    {{ body_html }}
+  </div>
+</div>

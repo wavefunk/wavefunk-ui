@@ -50,6 +50,9 @@ document.addEventListener('wfEcho', event => {
   document.querySelectorAll('[data-wf-echo]').forEach(target => {
     target.textContent = msg;
     target.dataset.kind = kind;
+    target.classList.remove('is-visible', 'is-ok', 'is-warn', 'is-err', 'is-info');
+    if (msg) target.classList.add('is-visible');
+    if (kind) target.classList.add('is-' + kind);
   });
 }, true);
 

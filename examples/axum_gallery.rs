@@ -1,12 +1,13 @@
 use askama::Template;
 use axum::{Router, response::Html, routing::get};
 use wavefunk_ui::components::{
-    Alert, Avatar, Badge, BreadcrumbItem, Breadcrumbs, Button, ButtonGroup, Card, CheckRow,
-    DefinitionItem, DefinitionList, EmptyState, FeedbackKind, Field, FieldState, Grid, HtmlAttr,
-    IconButton, Input, InputGroup, NavItem, NavSection, PageLink, Pagination, Panel, Range,
-    SegmentOption, SegmentedControl, Select, SelectOption, Split, SplitButton, Stat, StatRow,
-    Statusbar, Switch, TabItem, Table, TableCell, TableHeader, TableRow, Tabs, Tag, Textarea,
-    Topbar, TrustedHtml,
+    Alert, Avatar, Badge, BreadcrumbItem, Breadcrumbs, Button, ButtonGroup, Callout, Card,
+    CheckRow, DefinitionItem, DefinitionList, Drawer, EmptyState, FeedbackKind, Field, FieldState,
+    Grid, HtmlAttr, IconButton, Input, InputGroup, Menu, MenuItem, Minibuffer, Modal, NavItem,
+    NavSection, PageLink, Pagination, Panel, Popover, Range, SegmentOption, SegmentedControl,
+    Select, SelectOption, Skeleton, Spinner, Split, SplitButton, Stat, StatRow, Statusbar, Switch,
+    TabItem, Table, TableCell, TableHeader, TableRow, Tabs, Tag, Textarea, Toast, ToastHost,
+    Tooltip, Topbar, TrustedHtml,
 };
 use wavefunk_ui::layouts::AppShell;
 
@@ -36,6 +37,7 @@ struct GalleryNav;
       {{ split_button }}
       {{ icon_button }}
       {{ button }}
+      {{ echo_button }}
     </div>
     <div style="display: grid; gap: var(--space-3); max-width: 560px;">
       {{ email_input }}
@@ -51,6 +53,7 @@ struct GalleryNav;
       {{ range }}
     </div>
     {{ layout_showcase }}
+    {{ feedback_showcase }}
   </div>
 </section>
 "#,
@@ -64,6 +67,7 @@ struct GalleryContent<'a> {
     split_button: SplitButton<'a>,
     icon_button: IconButton<'a>,
     button: Button<'a>,
+    echo_button: Button<'a>,
     email_input: Input<'a>,
     notes: Textarea<'a>,
     plan_select: Select<'a>,
@@ -74,6 +78,7 @@ struct GalleryContent<'a> {
     switch_control: Switch<'a>,
     range: Range<'a>,
     layout_showcase: LayoutShowcase<'a>,
+    feedback_showcase: FeedbackShowcase<'a>,
 }
 
 #[derive(Template)]
@@ -134,11 +139,54 @@ struct LayoutShowcase<'a> {
 
 impl askama::filters::HtmlSafe for LayoutShowcase<'_> {}
 
+#[derive(Template)]
+#[template(
+    source = r#"
+<section class="wf-panel">
+  <div class="wf-panel-head">
+    <div class="wf-panel-title">Feedback and overlays</div>
+    {{ spinner }}
+  </div>
+  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+    {{ callout }}
+    {{ toast }}
+    {{ toast_host }}
+    {{ tooltip }}
+    {{ popover }}
+    {{ modal }}
+    {{ drawer }}
+    <div style="display: grid; gap: var(--space-2);">
+      {{ skeleton_title }}
+      {{ skeleton_line }}
+    </div>
+    {{ minibuffer }}
+  </div>
+</section>
+"#,
+    ext = "html"
+)]
+struct FeedbackShowcase<'a> {
+    callout: Callout<'a>,
+    toast: Toast<'a>,
+    toast_host: ToastHost<'a>,
+    tooltip: Tooltip<'a>,
+    popover: Popover<'a>,
+    modal: Modal<'a>,
+    drawer: Drawer<'a>,
+    skeleton_title: Skeleton,
+    skeleton_line: Skeleton,
+    spinner: Spinner,
+    minibuffer: Minibuffer<'a>,
+}
+
+impl askama::filters::HtmlSafe for FeedbackShowcase<'_> {}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/toast", get(toast))
+        .route("/echo", get(echo))
         .nest("/static/wavefunk", wavefunk_ui::axum::asset_router());
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
@@ -151,6 +199,7 @@ async fn main() {
 
 async fn index() -> Html<String> {
     let toast_attrs = [HtmlAttr::hx_get("/toast"), HtmlAttr::hx_swap("none")];
+    let echo_attrs = [HtmlAttr::hx_get("/echo"), HtmlAttr::hx_swap("none")];
     let button_group_items = [
         Button::new("Draft"),
         Button::primary("Publish").with_attrs(&toast_attrs),
@@ -182,6 +231,12 @@ async fn index() -> Html<String> {
         PageLink::ellipsis(),
         PageLink::disabled("Next"),
     ];
+    let menu_items = [
+        MenuItem::button("Open"),
+        MenuItem::link("Settings", "/settings"),
+        MenuItem::separator(),
+        MenuItem::button("Delete").danger(),
+    ];
     let table_headers = [TableHeader::new("Name"), TableHeader::numeric("Runs")];
     let table_cells = [TableCell::strong("Build"), TableCell::numeric("12")];
     let table_rows = [TableRow::new(&table_cells).selected()];
@@ -204,6 +259,7 @@ async fn index() -> Html<String> {
     let card_for_grid = Card::new("Card", TrustedHtml::new("<p>Grid item</p>"))
         .render()
         .expect("render grid card");
+    let menu_html = Menu::new(&menu_items).render().expect("render menu");
     let nav = GalleryNav.render().expect("render gallery nav");
     let content = GalleryContent {
         tag: Tag::status(FeedbackKind::Ok, "Embedded assets"),
@@ -220,6 +276,7 @@ async fn index() -> Html<String> {
         split_button: SplitButton::new(Button::primary("Deploy"), Button::new("More")),
         icon_button: IconButton::new(TrustedHtml::new("&times;"), "Dismiss"),
         button: Button::primary("Toast").with_attrs(&toast_attrs),
+        echo_button: Button::new("Echo").with_attrs(&echo_attrs),
         email_input: Input::email("email").with_placeholder("you@wavefunk.test"),
         notes: Textarea::new("notes")
             .with_placeholder("Notes")
@@ -269,6 +326,29 @@ async fn index() -> Html<String> {
             ))
             .vertical(),
         },
+        feedback_showcase: FeedbackShowcase {
+            callout: Callout::new(
+                FeedbackKind::Info,
+                TrustedHtml::new("<p>Callout body for shared UI notices.</p>"),
+            )
+            .with_title("Notice"),
+            toast: Toast::new(FeedbackKind::Ok, "Saved."),
+            toast_host: ToastHost::new(),
+            tooltip: Tooltip::new("Copy id", TrustedHtml::new(r#"<button>copy</button>"#)),
+            popover: Popover::new(
+                TrustedHtml::new(r#"<button class="wf-btn" data-popover-toggle>Menu</button>"#),
+                TrustedHtml::new(&menu_html),
+            )
+            .with_heading("Actions"),
+            modal: Modal::new("Confirm", TrustedHtml::new("<p>Modal body.</p>")).with_footer(
+                TrustedHtml::new(r#"<button class="wf-btn primary">Confirm</button>"#),
+            ),
+            drawer: Drawer::new("Details", TrustedHtml::new("<p>Drawer body.</p>")),
+            skeleton_title: Skeleton::title(),
+            skeleton_line: Skeleton::line(),
+            spinner: Spinner::large(),
+            minibuffer: Minibuffer::new().with_message(FeedbackKind::Info, "Ready"),
+        },
     }
     .render()
     .expect("render gallery content");
@@ -282,10 +362,32 @@ async fn index() -> Html<String> {
 }
 
 async fn toast() -> ([(axum::http::HeaderName, String); 1], &'static str) {
+    let (name, value) =
+        wavefunk_ui::htmx::trigger_header_pair(&[wavefunk_ui::htmx::Trigger::toast(
+            "ok", "Saved.",
+        )])
+        .expect("render HX-Trigger header");
+
     (
         [(
-            axum::http::HeaderName::from_static("hx-trigger"),
-            wavefunk_ui::htmx::toast_header("ok", "Saved."),
+            axum::http::HeaderName::from_bytes(name.as_bytes()).expect("valid header name"),
+            value,
+        )],
+        "",
+    )
+}
+
+async fn echo() -> ([(axum::http::HeaderName, String); 1], &'static str) {
+    let (name, value) =
+        wavefunk_ui::htmx::trigger_header_pair(&[wavefunk_ui::htmx::Trigger::echo(
+            "info", "Queued.",
+        )])
+        .expect("render HX-Trigger header");
+
+    (
+        [(
+            axum::http::HeaderName::from_bytes(name.as_bytes()).expect("valid header name"),
+            value,
         )],
         "",
     )

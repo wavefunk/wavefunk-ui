@@ -1762,6 +1762,473 @@ impl<'a> Split<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Split<'a> {}
 
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/callout.html")]
+pub struct Callout<'a> {
+    pub kind: FeedbackKind,
+    pub title: Option<&'a str>,
+    pub body_html: TrustedHtml<'a>,
+}
+
+impl<'a> Callout<'a> {
+    pub const fn new(kind: FeedbackKind, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            kind,
+            title: None,
+            body_html,
+        }
+    }
+
+    pub const fn with_title(mut self, title: &'a str) -> Self {
+        self.title = Some(title);
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        format!("wf-callout {}", self.kind.class())
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Callout<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/toast.html")]
+pub struct Toast<'a> {
+    pub kind: FeedbackKind,
+    pub message: &'a str,
+}
+
+impl<'a> Toast<'a> {
+    pub const fn new(kind: FeedbackKind, message: &'a str) -> Self {
+        Self { kind, message }
+    }
+
+    pub fn class_name(&self) -> String {
+        format!("wf-toast {}", self.kind.class())
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Toast<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/toast_host.html")]
+pub struct ToastHost<'a> {
+    pub id: &'a str,
+}
+
+impl<'a> ToastHost<'a> {
+    pub const fn new() -> Self {
+        Self { id: "toast-host" }
+    }
+
+    pub const fn with_id(mut self, id: &'a str) -> Self {
+        self.id = id;
+        self
+    }
+}
+
+impl<'a> Default for ToastHost<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ToastHost<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/tooltip.html")]
+pub struct Tooltip<'a> {
+    pub tip: &'a str,
+    pub content_html: TrustedHtml<'a>,
+}
+
+impl<'a> Tooltip<'a> {
+    pub const fn new(tip: &'a str, content_html: TrustedHtml<'a>) -> Self {
+        Self { tip, content_html }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Tooltip<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MenuItemKind {
+    Button,
+    Link,
+    Separator,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MenuItem<'a> {
+    pub kind: MenuItemKind,
+    pub label: &'a str,
+    pub href: Option<&'a str>,
+    pub danger: bool,
+    pub disabled: bool,
+    pub kbd: Option<&'a str>,
+}
+
+impl<'a> MenuItem<'a> {
+    pub const fn button(label: &'a str) -> Self {
+        Self {
+            kind: MenuItemKind::Button,
+            label,
+            href: None,
+            danger: false,
+            disabled: false,
+            kbd: None,
+        }
+    }
+
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            kind: MenuItemKind::Link,
+            href: Some(href),
+            ..Self::button(label)
+        }
+    }
+
+    pub const fn separator() -> Self {
+        Self {
+            kind: MenuItemKind::Separator,
+            label: "",
+            href: None,
+            danger: false,
+            disabled: false,
+            kbd: None,
+        }
+    }
+
+    pub const fn danger(mut self) -> Self {
+        self.danger = true;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub const fn with_kbd(mut self, kbd: &'a str) -> Self {
+        self.kbd = Some(kbd);
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.danger {
+            "wf-menu-item danger"
+        } else {
+            "wf-menu-item"
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/menu.html")]
+pub struct Menu<'a> {
+    pub items: &'a [MenuItem<'a>],
+}
+
+impl<'a> Menu<'a> {
+    pub const fn new(items: &'a [MenuItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Menu<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/popover.html")]
+pub struct Popover<'a> {
+    pub trigger_html: TrustedHtml<'a>,
+    pub body_html: TrustedHtml<'a>,
+    pub heading: Option<&'a str>,
+    pub side: &'a str,
+    pub open: bool,
+}
+
+impl<'a> Popover<'a> {
+    pub const fn new(trigger_html: TrustedHtml<'a>, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            trigger_html,
+            body_html,
+            heading: None,
+            side: "bottom",
+            open: false,
+        }
+    }
+
+    pub const fn with_heading(mut self, heading: &'a str) -> Self {
+        self.heading = Some(heading);
+        self
+    }
+
+    pub const fn with_side(mut self, side: &'a str) -> Self {
+        self.side = side;
+        self
+    }
+
+    pub const fn open(mut self) -> Self {
+        self.open = true;
+        self
+    }
+
+    pub fn popover_class(&self) -> &'static str {
+        if self.open {
+            "wf-popover is-open"
+        } else {
+            "wf-popover"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Popover<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/modal.html")]
+pub struct Modal<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub footer_html: Option<TrustedHtml<'a>>,
+    pub open: bool,
+}
+
+impl<'a> Modal<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            footer_html: None,
+            open: false,
+        }
+    }
+
+    pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_html = Some(footer_html);
+        self
+    }
+
+    pub const fn open(mut self) -> Self {
+        self.open = true;
+        self
+    }
+
+    pub fn overlay_class(&self) -> &'static str {
+        if self.open {
+            "wf-overlay is-open"
+        } else {
+            "wf-overlay"
+        }
+    }
+
+    pub fn modal_class(&self) -> &'static str {
+        if self.open {
+            "wf-modal is-open"
+        } else {
+            "wf-modal"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Modal<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/drawer.html")]
+pub struct Drawer<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub footer_html: Option<TrustedHtml<'a>>,
+    pub open: bool,
+    pub left: bool,
+}
+
+impl<'a> Drawer<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            footer_html: None,
+            open: false,
+            left: false,
+        }
+    }
+
+    pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_html = Some(footer_html);
+        self
+    }
+
+    pub const fn open(mut self) -> Self {
+        self.open = true;
+        self
+    }
+
+    pub const fn left(mut self) -> Self {
+        self.left = true;
+        self
+    }
+
+    pub fn overlay_class(&self) -> &'static str {
+        if self.open {
+            "wf-overlay is-open"
+        } else {
+            "wf-overlay"
+        }
+    }
+
+    pub fn drawer_class(&self) -> String {
+        let open = if self.open { " is-open" } else { "" };
+        let left = if self.left { " left" } else { "" };
+        format!("wf-drawer{open}{left}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Drawer<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SkeletonKind {
+    Line,
+    Title,
+    Block,
+}
+
+impl SkeletonKind {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Line => "line",
+            Self::Title => "title",
+            Self::Block => "block",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/skeleton.html")]
+pub struct Skeleton {
+    pub kind: SkeletonKind,
+}
+
+impl Skeleton {
+    pub const fn line() -> Self {
+        Self {
+            kind: SkeletonKind::Line,
+        }
+    }
+
+    pub const fn title() -> Self {
+        Self {
+            kind: SkeletonKind::Title,
+        }
+    }
+
+    pub const fn block() -> Self {
+        Self {
+            kind: SkeletonKind::Block,
+        }
+    }
+
+    pub fn class_name(&self) -> String {
+        format!("wf-skeleton {}", self.kind.class())
+    }
+}
+
+impl askama::filters::HtmlSafe for Skeleton {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/spinner.html")]
+pub struct Spinner {
+    pub large: bool,
+}
+
+impl Spinner {
+    pub const fn new() -> Self {
+        Self { large: false }
+    }
+
+    pub const fn large() -> Self {
+        Self { large: true }
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.large {
+            "wf-spinner lg"
+        } else {
+            "wf-spinner"
+        }
+    }
+}
+
+impl Default for Spinner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl askama::filters::HtmlSafe for Spinner {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/minibuffer.html")]
+pub struct Minibuffer<'a> {
+    pub prompt: &'a str,
+    pub message: Option<&'a str>,
+    pub kind: Option<FeedbackKind>,
+    pub time: Option<&'a str>,
+}
+
+impl<'a> Minibuffer<'a> {
+    pub const fn new() -> Self {
+        Self {
+            prompt: ">",
+            message: None,
+            kind: None,
+            time: None,
+        }
+    }
+
+    pub const fn with_prompt(mut self, prompt: &'a str) -> Self {
+        self.prompt = prompt;
+        self
+    }
+
+    pub const fn with_message(mut self, kind: FeedbackKind, message: &'a str) -> Self {
+        self.kind = Some(kind);
+        self.message = Some(message);
+        self
+    }
+
+    pub const fn with_time(mut self, time: &'a str) -> Self {
+        self.time = Some(time);
+        self
+    }
+
+    pub fn message_class(&self) -> String {
+        match self.kind {
+            Some(kind) if self.message.is_some() => {
+                format!("wf-minibuffer-msg is-visible is-{}", kind.class())
+            }
+            _ => "wf-minibuffer-msg".to_owned(),
+        }
+    }
+}
+
+impl<'a> Default for Minibuffer<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Minibuffer<'a> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2001,5 +2468,72 @@ mod tests {
         assert!(!dl.contains("Rust <stable>"));
         assert!(grid.contains(r#"class="wf-grid cols-2""#));
         assert!(split.contains(r#"class="wf-split vertical""#));
+    }
+
+    #[test]
+    fn feedback_overlay_and_loading_primitives_render_expected_markup() {
+        let callout = Callout::new(FeedbackKind::Warn, TrustedHtml::new("<p>Heads up</p>"))
+            .with_title("Warning")
+            .render()
+            .unwrap();
+        let toast = Toast::new(FeedbackKind::Ok, "Saved <now>")
+            .render()
+            .unwrap();
+        let toast_host = ToastHost::new().render().unwrap();
+        let tooltip = Tooltip::new("Copy id", TrustedHtml::new(r#"<button>copy</button>"#))
+            .render()
+            .unwrap();
+        let menu_items = [
+            MenuItem::button("Open"),
+            MenuItem::link("Settings", "/settings"),
+            MenuItem::separator(),
+            MenuItem::button("Delete").danger(),
+        ];
+        let menu = Menu::new(&menu_items).render().unwrap();
+        let popover = Popover::new(
+            TrustedHtml::new(r#"<button data-popover-toggle>Open</button>"#),
+            TrustedHtml::new(&menu),
+        )
+        .with_heading("Menu")
+        .open()
+        .render()
+        .unwrap();
+        let modal = Modal::new("Confirm", TrustedHtml::new("<p>Continue?</p>"))
+            .with_footer(TrustedHtml::new(
+                r#"<button class="wf-btn primary">Confirm</button>"#,
+            ))
+            .open()
+            .render()
+            .unwrap();
+        let drawer = Drawer::new("Details", TrustedHtml::new("<p>Side sheet</p>"))
+            .left()
+            .open()
+            .render()
+            .unwrap();
+        let skeleton = Skeleton::title().render().unwrap();
+        let spinner = Spinner::large().render().unwrap();
+        let minibuffer = Minibuffer::new()
+            .with_message(FeedbackKind::Info, "Queued <job>")
+            .with_time("09:41")
+            .render()
+            .unwrap();
+
+        assert!(callout.contains(r#"class="wf-callout warn""#));
+        assert!(toast.contains(r#"class="wf-toast ok""#));
+        assert!(!toast.contains("Saved <now>"));
+        assert!(toast_host.contains(r#"class="wf-toast-host""#));
+        assert!(tooltip.contains(r#"class="wf-tooltip""#));
+        assert!(tooltip.contains(r#"data-tip="Copy id""#));
+        assert!(menu.contains(r#"class="wf-menu""#));
+        assert!(menu.contains(r#"class="wf-menu-sep""#));
+        assert!(popover.contains(r#"class="wf-popover is-open""#));
+        assert!(modal.contains(r#"class="wf-modal is-open""#));
+        assert!(modal.contains(r#"class="wf-overlay is-open""#));
+        assert!(drawer.contains(r#"class="wf-drawer is-open left""#));
+        assert!(skeleton.contains(r#"class="wf-skeleton title""#));
+        assert!(spinner.contains(r#"class="wf-spinner lg""#));
+        assert!(minibuffer.contains(r#"class="wf-minibuffer""#));
+        assert!(minibuffer.contains("data-wf-echo"));
+        assert!(!minibuffer.contains("Queued <job>"));
     }
 }

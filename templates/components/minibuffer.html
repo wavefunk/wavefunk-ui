@@ -1,0 +1,9 @@
+<div class="wf-minibuffer">
+  <span class="wf-minibuffer-prompt">{{ prompt }}</span>
+  <span class="{{ self.message_class() }}" data-wf-echo>{% match message %}{% when Some with (text) %}{{ text }}{% when None %}{% endmatch %}</span>
+  {%- match time -%}
+  {%- when Some with (text) -%}
+  <span class="wf-minibuffer-time">{{ text }}</span>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

@@ -100,6 +100,25 @@ Component rendering uses Askama's `Result` type. Propagate render errors from re
 
 Feature flags are additive. The default feature set stays framework-neutral; framework adapters such as Axum are enabled with feature flags.
 
+## Interaction Primitives
+
+The shared JavaScript in `wavefunk.js` is intentionally generic:
+
+- Popovers open when a trigger inside `.wf-pop-anchor` has `data-popover-toggle`; the matching `.wf-popover` closes when the user clicks outside it.
+- Toasts are emitted with an htmx `HX-Trigger` payload for `wfToast`.
+- Echo/minibuffer messages are emitted with `wfEcho` and update elements marked with `data-wf-echo`.
+
+Use the htmx helpers to build response headers:
+
+```rust
+let (name, value) = wavefunk_ui::htmx::trigger_header_pair(&[
+    wavefunk_ui::htmx::Trigger::toast("ok", "Saved."),
+    wavefunk_ui::htmx::Trigger::echo("info", "Queued."),
+])?;
+```
+
+Modal and drawer wrappers render the overlay plus the panel markup. Add `.open()` when server-rendering the visible state, and omit it for the hidden state. Popover wrappers render the `.wf-pop-anchor` plus `.wf-popover`; pass trigger markup that includes `data-popover-toggle`.
+
 ## Askama Performance
 
 Use Askama's `render`, `render_into`, or `write_into` methods for template output. Avoid converting templates through `to_string()` or `format!()` in hot paths.

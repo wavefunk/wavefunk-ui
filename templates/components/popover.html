@@ -1,0 +1,11 @@
+<div class="wf-pop-anchor">
+  {{ trigger_html }}
+  <div class="{{ self.popover_class() }}" data-side="{{ side }}">
+    {%- match heading -%}
+    {%- when Some with (text) -%}
+    <div class="wf-popover-head">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+    <div class="wf-popover-body">{{ body_html }}</div>
+  </div>
+</div>

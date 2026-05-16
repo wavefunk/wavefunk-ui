@@ -1,6 +1,8 @@
 use serde::Serialize;
 use serde_json::{Map, Value};
 
+pub const HX_TRIGGER_HEADER: &str = "HX-Trigger";
+
 #[derive(Clone, Debug, Serialize)]
 pub struct MessageEvent<'a> {
     pub kind: &'a str,
@@ -48,6 +50,10 @@ pub fn trigger_header(triggers: &[Trigger<'_>]) -> serde_json::Result<String> {
     Ok(Value::Object(map).to_string())
 }
 
+pub fn trigger_header_pair(triggers: &[Trigger<'_>]) -> serde_json::Result<(&'static str, String)> {
+    trigger_header(triggers).map(|value| (HX_TRIGGER_HEADER, value))
+}
+
 pub fn toast_header(kind: &str, msg: &str) -> String {
     trigger_header(&[Trigger::toast(kind, msg)])
         .expect("serializing a Wave Funk toast trigger should not fail")
@@ -66,5 +72,21 @@ mod tests {
     fn builds_hx_trigger_payload() {
         let header = trigger_header(&[Trigger::toast("ok", "Saved.")]).unwrap();
         assert_eq!(header, r#"{"wfToast":{"kind":"ok","msg":"Saved."}}"#);
+    }
+
+    #[test]
+    fn builds_hx_trigger_response_header_pair() {
+        let header = trigger_header_pair(&[
+            Trigger::toast("ok", "Saved."),
+            Trigger::echo("info", "Queued."),
+        ])
+        .unwrap();
+
+        assert_eq!(header.0, HX_TRIGGER_HEADER);
+        let value: Value = serde_json::from_str(&header.1).unwrap();
+        assert_eq!(value["wfToast"]["kind"], "ok");
+        assert_eq!(value["wfToast"]["msg"], "Saved.");
+        assert_eq!(value["wfEcho"]["kind"], "info");
+        assert_eq!(value["wfEcho"]["msg"], "Queued.");
     }
 }
