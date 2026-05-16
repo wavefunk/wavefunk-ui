@@ -1,5 +1,6 @@
 use askama::Template;
-use axum::{Router, response::Html, routing::get};
+use axum::{Router, extract::Query, response::Html, routing::get};
+use serde::Deserialize;
 use wavefunk_ui::components::{
     Alert, Avatar, Badge, BreadcrumbItem, Breadcrumbs, Button, ButtonGroup, Callout, Card,
     CheckRow, DefinitionItem, DefinitionList, Drawer, EmptyState, FeedbackKind, Field, FieldState,
@@ -16,6 +17,11 @@ use wavefunk_ui::layouts::AppShell;
     source = r#"
 <div class="wf-nav-section">Gallery</div>
 <a class="wf-nav-item is-active" href="/">Components</a>
+<div class="wf-nav-section">Variants</div>
+<a class="wf-nav-item" href="/?mode=dark&density=dense">Dark dense</a>
+<a class="wf-nav-item" href="/?mode=light&density=dense">Light dense</a>
+<a class="wf-nav-item" href="/?mode=dark&density=default">Dark default</a>
+<a class="wf-nav-item" href="/?mode=light&density=default">Light default</a>
 "#,
     ext = "html"
 )]
@@ -24,38 +30,51 @@ struct GalleryNav;
 #[derive(Template)]
 #[template(
     source = r#"
-<section class="wf-panel">
-  <div class="wf-panel-head">
-    <div class="wf-panel-title">First slice</div>
-    {{ tag }}
-  </div>
-  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
-    {{ alert }}
-    {{ field }}
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;">
-      {{ button_group }}
-      {{ split_button }}
-      {{ icon_button }}
-      {{ button }}
-      {{ echo_button }}
+<a class="wf-btn ghost" href="/?mode=dark&density=dense">Dark</a>
+<a class="wf-btn ghost" href="/?mode=light&density=dense">Light</a>
+<a class="wf-btn ghost" href="/?mode=dark&density=default">Default density</a>
+"#,
+    ext = "html"
+)]
+struct GalleryActions;
+
+#[derive(Template)]
+#[template(
+    source = r#"
+<div style="display: grid; gap: var(--space-5); min-width: 0;">
+  <section class="wf-panel">
+    <div class="wf-panel-head">
+      <div class="wf-panel-title">Actions and forms</div>
+      {{ tag }}
     </div>
-    <div style="display: grid; gap: var(--space-3); max-width: 560px;">
-      {{ email_input }}
-      {{ notes }}
-      {{ plan_select }}
-      {{ input_group }}
-      {{ success_field }}
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;">
-        {{ checkbox }}
-        {{ radio }}
-        {{ switch_control }}
+    <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+      {{ alert }}
+      {{ field }}
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;">
+        {{ button_group }}
+        {{ split_button }}
+        {{ icon_button }}
+        {{ button }}
+        {{ echo_button }}
       </div>
-      {{ range }}
+      <div style="display: grid; gap: var(--space-3); max-width: 560px;">
+        {{ email_input }}
+        {{ notes }}
+        {{ plan_select }}
+        {{ input_group }}
+        {{ success_field }}
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;">
+          {{ checkbox }}
+          {{ radio }}
+          {{ switch_control }}
+        </div>
+        {{ range }}
+      </div>
     </div>
-    {{ layout_showcase }}
-    {{ feedback_showcase }}
-  </div>
-</section>
+  </section>
+  {{ layout_showcase }}
+  {{ feedback_showcase }}
+</div>
 "#,
     ext = "html"
 )]
@@ -181,6 +200,25 @@ struct FeedbackShowcase<'a> {
 
 impl askama::filters::HtmlSafe for FeedbackShowcase<'_> {}
 
+#[derive(Debug, Default, Deserialize)]
+struct GalleryQuery {
+    mode: Option<String>,
+    density: Option<String>,
+}
+
+impl GalleryQuery {
+    fn mode(&self) -> &'static str {
+        match self.mode.as_deref() {
+            Some("light") => "light",
+            _ => "dark",
+        }
+    }
+
+    fn default_density(&self) -> bool {
+        matches!(self.density.as_deref(), Some("default"))
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
@@ -197,7 +235,7 @@ async fn main() {
         .expect("run gallery server");
 }
 
-async fn index() -> Html<String> {
+async fn index(Query(query): Query<GalleryQuery>) -> Html<String> {
     let toast_attrs = [HtmlAttr::hx_get("/toast"), HtmlAttr::hx_swap("none")];
     let echo_attrs = [HtmlAttr::hx_get("/echo"), HtmlAttr::hx_swap("none")];
     let button_group_items = [
@@ -352,10 +390,16 @@ async fn index() -> Html<String> {
     }
     .render()
     .expect("render gallery content");
-    let shell = AppShell {
-        nav_html: &nav,
-        status_right: "0.1.0",
-        ..AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
+    let actions = GalleryActions.render().expect("render gallery actions");
+    let shell = AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
+        .with_nav(&nav)
+        .with_actions(&actions)
+        .with_mode(query.mode())
+        .with_status("Gallery ready", "0.1.0");
+    let shell = if query.default_density() {
+        shell.default_density()
+    } else {
+        shell.dense()
     };
 
     Html(shell.render().expect("render app shell"))
