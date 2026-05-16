@@ -22,7 +22,7 @@ async fn asset(
             );
             headers.insert(
                 header::CACHE_CONTROL,
-                HeaderValue::from_static("public, max-age=0, must-revalidate"),
+                HeaderValue::from_static(assets::CACHE_CONTROL),
             );
             (StatusCode::OK, headers, asset.bytes.into_owned()).into_response()
         }

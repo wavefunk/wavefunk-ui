@@ -20,7 +20,18 @@ wavefunk-ui = { version = "0.1", features = ["axum"] }
 
 ## Embedded Assets
 
-The public asset mount is expected to be `/static/wavefunk`.
+The crate embeds the runtime assets under the stable public mount path `/static/wavefunk`:
+
+- `css/wavefunk.css`
+- `css/fonts/MartianGrotesk-VF.woff2`
+- `css/fonts/MartianMono-VF.woff2`
+- `js/wavefunk.js`
+- `js/htmx.min.js`
+- `js/htmx-sse.js`
+
+No runtime `static/` directory is required in consuming binaries.
+
+With Axum, enable the `axum` feature and mount the optional router:
 
 ```rust
 let app = axum::Router::new()
@@ -39,7 +50,14 @@ The raw framework-neutral API is also available:
 
 ```rust
 let css = wavefunk_ui::assets::get("css/wavefunk.css").unwrap();
+let htmx = wavefunk_ui::assets::get("/static/wavefunk/js/htmx.min.js").unwrap();
 ```
+
+`assets::get` normalizes both crate-relative paths and paths under `assets::DEFAULT_BASE_PATH`, rejects traversal, and returns bytes plus a content type. CSS and JavaScript are served as UTF-8 text, fonts as `font/woff2`, and unknown extensions as `application/octet-stream`.
+
+Framework adapters use `assets::CACHE_CONTROL`, currently `public, max-age=0, must-revalidate`, so deployments can refresh unchanged asset paths safely.
+
+The vendored htmx and htmx SSE assets are covered by `LICENSES.htmx.txt`. The Wave Funk CSS, JavaScript helper, and fonts are distributed with this crate under the package license.
 
 ## Component API Contract
 
