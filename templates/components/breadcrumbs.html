@@ -1,0 +1,11 @@
+<nav class="wf-crumbs" aria-label="Breadcrumbs">
+{%- for item in items -%}
+  {%- if !loop.first -%}<span class="sep">/</span>{%- endif -%}
+  {%- match item.href -%}
+  {%- when Some with (href) -%}
+  <a href="{{ href }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a>
+  {%- when None -%}
+  <span{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</span>
+  {%- endmatch -%}
+{%- endfor -%}
+</nav>

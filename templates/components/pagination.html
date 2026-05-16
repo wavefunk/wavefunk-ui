@@ -1,0 +1,14 @@
+<nav class="wf-pagination" aria-label="Pagination">
+{%- for page in pages -%}
+  {%- if page.ellipsis -%}
+  <span class="ellipsis">{{ page.label }}</span>
+  {%- else -%}
+    {%- match page.href -%}
+    {%- when Some with (href) -%}
+    <a href="{{ href }}"{% if page.active %} class="is-active" aria-current="page"{% endif %}>{{ page.label }}</a>
+    {%- when None -%}
+    <button type="button"{% if page.active %} class="is-active"{% endif %}{% if page.disabled %} disabled{% endif %}>{{ page.label }}</button>
+    {%- endmatch -%}
+  {%- endif -%}
+{%- endfor -%}
+</nav>

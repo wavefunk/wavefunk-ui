@@ -884,6 +884,884 @@ impl<'a> Range<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Range<'a> {}
 
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/panel.html")]
+pub struct Panel<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub action_html: Option<TrustedHtml<'a>>,
+    pub danger: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Panel<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            action_html: None,
+            danger: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_action(mut self, action_html: TrustedHtml<'a>) -> Self {
+        self.action_html = Some(action_html);
+        self
+    }
+
+    pub const fn danger(mut self) -> Self {
+        self.danger = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.danger {
+            "wf-panel is-danger"
+        } else {
+            "wf-panel"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Panel<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/card.html")]
+pub struct Card<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub kicker: Option<&'a str>,
+    pub foot_html: Option<TrustedHtml<'a>>,
+    pub raised: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Card<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            kicker: None,
+            foot_html: None,
+            raised: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_kicker(mut self, kicker: &'a str) -> Self {
+        self.kicker = Some(kicker);
+        self
+    }
+
+    pub const fn with_foot(mut self, foot_html: TrustedHtml<'a>) -> Self {
+        self.foot_html = Some(foot_html);
+        self
+    }
+
+    pub const fn raised(mut self) -> Self {
+        self.raised = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.raised {
+            "wf-card is-raised"
+        } else {
+            "wf-card"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Card<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum BadgeKind {
+    Default,
+    Muted,
+    Error,
+}
+
+impl BadgeKind {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Default => "",
+            Self::Muted => " muted",
+            Self::Error => " err",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/badge.html")]
+pub struct Badge<'a> {
+    pub label: &'a str,
+    pub kind: BadgeKind,
+}
+
+impl<'a> Badge<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self {
+            label,
+            kind: BadgeKind::Default,
+        }
+    }
+
+    pub const fn muted(label: &'a str) -> Self {
+        Self {
+            kind: BadgeKind::Muted,
+            ..Self::new(label)
+        }
+    }
+
+    pub const fn error(label: &'a str) -> Self {
+        Self {
+            kind: BadgeKind::Error,
+            ..Self::new(label)
+        }
+    }
+
+    pub fn class_name(&self) -> String {
+        format!("wf-badge{}", self.kind.class())
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Badge<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum AvatarSize {
+    Default,
+    Small,
+    Large,
+    ExtraLarge,
+}
+
+impl AvatarSize {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Default => "",
+            Self::Small => " sm",
+            Self::Large => " lg",
+            Self::ExtraLarge => " xl",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/avatar.html")]
+pub struct Avatar<'a> {
+    pub initials: &'a str,
+    pub image_src: Option<&'a str>,
+    pub size: AvatarSize,
+    pub accent: bool,
+}
+
+impl<'a> Avatar<'a> {
+    pub const fn new(initials: &'a str) -> Self {
+        Self {
+            initials,
+            image_src: None,
+            size: AvatarSize::Default,
+            accent: false,
+        }
+    }
+
+    pub const fn with_image(mut self, image_src: &'a str) -> Self {
+        self.image_src = Some(image_src);
+        self
+    }
+
+    pub const fn with_size(mut self, size: AvatarSize) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub const fn accent(mut self) -> Self {
+        self.accent = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let accent = if self.accent { " accent" } else { "" };
+        format!("wf-avatar{}{}", self.size.class(), accent)
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Avatar<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DeltaKind {
+    Neutral,
+    Up,
+    Down,
+}
+
+impl DeltaKind {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Neutral => "",
+            Self::Up => " up",
+            Self::Down => " down",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct Stat<'a> {
+    pub label: &'a str,
+    pub value: &'a str,
+    pub unit: Option<&'a str>,
+    pub delta: Option<&'a str>,
+    pub delta_kind: DeltaKind,
+    pub foot: Option<&'a str>,
+}
+
+impl<'a> Stat<'a> {
+    pub const fn new(label: &'a str, value: &'a str) -> Self {
+        Self {
+            label,
+            value,
+            unit: None,
+            delta: None,
+            delta_kind: DeltaKind::Neutral,
+            foot: None,
+        }
+    }
+
+    pub const fn with_unit(mut self, unit: &'a str) -> Self {
+        self.unit = Some(unit);
+        self
+    }
+
+    pub const fn with_delta(mut self, delta: &'a str, kind: DeltaKind) -> Self {
+        self.delta = Some(delta);
+        self.delta_kind = kind;
+        self
+    }
+
+    pub const fn with_foot(mut self, foot: &'a str) -> Self {
+        self.foot = Some(foot);
+        self
+    }
+
+    pub fn delta_class(&self) -> String {
+        format!("wf-stat-delta{}", self.delta_kind.class())
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/stat_row.html")]
+pub struct StatRow<'a> {
+    pub stats: &'a [Stat<'a>],
+}
+
+impl<'a> StatRow<'a> {
+    pub const fn new(stats: &'a [Stat<'a>]) -> Self {
+        Self { stats }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for StatRow<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BreadcrumbItem<'a> {
+    pub label: &'a str,
+    pub href: Option<&'a str>,
+    pub current: bool,
+}
+
+impl<'a> BreadcrumbItem<'a> {
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href: Some(href),
+            current: false,
+        }
+    }
+
+    pub const fn current(label: &'a str) -> Self {
+        Self {
+            label,
+            href: None,
+            current: true,
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/breadcrumbs.html")]
+pub struct Breadcrumbs<'a> {
+    pub items: &'a [BreadcrumbItem<'a>],
+}
+
+impl<'a> Breadcrumbs<'a> {
+    pub const fn new(items: &'a [BreadcrumbItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Breadcrumbs<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TabItem<'a> {
+    pub label: &'a str,
+    pub href: &'a str,
+    pub active: bool,
+}
+
+impl<'a> TabItem<'a> {
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href,
+            active: false,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/tabs.html")]
+pub struct Tabs<'a> {
+    pub items: &'a [TabItem<'a>],
+}
+
+impl<'a> Tabs<'a> {
+    pub const fn new(items: &'a [TabItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Tabs<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct SegmentOption<'a> {
+    pub label: &'a str,
+    pub value: &'a str,
+    pub active: bool,
+}
+
+impl<'a> SegmentOption<'a> {
+    pub const fn new(label: &'a str, value: &'a str) -> Self {
+        Self {
+            label,
+            value,
+            active: false,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/segmented_control.html")]
+pub struct SegmentedControl<'a> {
+    pub options: &'a [SegmentOption<'a>],
+    pub small: bool,
+}
+
+impl<'a> SegmentedControl<'a> {
+    pub const fn new(options: &'a [SegmentOption<'a>]) -> Self {
+        Self {
+            options,
+            small: false,
+        }
+    }
+
+    pub const fn small(mut self) -> Self {
+        self.small = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.small { "wf-seg sm" } else { "wf-seg" }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for SegmentedControl<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PageLink<'a> {
+    pub label: &'a str,
+    pub href: Option<&'a str>,
+    pub active: bool,
+    pub disabled: bool,
+    pub ellipsis: bool,
+}
+
+impl<'a> PageLink<'a> {
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href: Some(href),
+            active: false,
+            disabled: false,
+            ellipsis: false,
+        }
+    }
+
+    pub const fn disabled(label: &'a str) -> Self {
+        Self {
+            label,
+            href: None,
+            active: false,
+            disabled: true,
+            ellipsis: false,
+        }
+    }
+
+    pub const fn ellipsis() -> Self {
+        Self {
+            label: "...",
+            href: None,
+            active: false,
+            disabled: false,
+            ellipsis: true,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/pagination.html")]
+pub struct Pagination<'a> {
+    pub pages: &'a [PageLink<'a>],
+}
+
+impl<'a> Pagination<'a> {
+    pub const fn new(pages: &'a [PageLink<'a>]) -> Self {
+        Self { pages }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Pagination<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/nav_section.html")]
+pub struct NavSection<'a> {
+    pub label: &'a str,
+}
+
+impl<'a> NavSection<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self { label }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for NavSection<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/nav_item.html")]
+pub struct NavItem<'a> {
+    pub label: &'a str,
+    pub href: &'a str,
+    pub count: Option<&'a str>,
+    pub active: bool,
+}
+
+impl<'a> NavItem<'a> {
+    pub const fn new(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href,
+            count: None,
+            active: false,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub const fn with_count(mut self, count: &'a str) -> Self {
+        self.count = Some(count);
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.active {
+            "wf-nav-item is-active"
+        } else {
+            "wf-nav-item"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for NavItem<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/topbar.html")]
+pub struct Topbar<'a> {
+    pub breadcrumbs_html: TrustedHtml<'a>,
+    pub actions_html: TrustedHtml<'a>,
+}
+
+impl<'a> Topbar<'a> {
+    pub const fn new(breadcrumbs_html: TrustedHtml<'a>, actions_html: TrustedHtml<'a>) -> Self {
+        Self {
+            breadcrumbs_html,
+            actions_html,
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Topbar<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/statusbar.html")]
+pub struct Statusbar<'a> {
+    pub left: &'a str,
+    pub right: &'a str,
+}
+
+impl<'a> Statusbar<'a> {
+    pub const fn new(left: &'a str, right: &'a str) -> Self {
+        Self { left, right }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Statusbar<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/empty_state.html")]
+pub struct EmptyState<'a> {
+    pub title: &'a str,
+    pub body: &'a str,
+    pub glyph_html: Option<TrustedHtml<'a>>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+    pub bordered: bool,
+    pub dense: bool,
+}
+
+impl<'a> EmptyState<'a> {
+    pub const fn new(title: &'a str, body: &'a str) -> Self {
+        Self {
+            title,
+            body,
+            glyph_html: None,
+            actions_html: None,
+            bordered: false,
+            dense: false,
+        }
+    }
+
+    pub const fn with_glyph(mut self, glyph_html: TrustedHtml<'a>) -> Self {
+        self.glyph_html = Some(glyph_html);
+        self
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+
+    pub const fn bordered(mut self) -> Self {
+        self.bordered = true;
+        self
+    }
+
+    pub const fn dense(mut self) -> Self {
+        self.dense = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let bordered = if self.bordered { " bordered" } else { "" };
+        let dense = if self.dense { " dense" } else { "" };
+        format!("wf-empty{bordered}{dense}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for EmptyState<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TableHeader<'a> {
+    pub label: &'a str,
+    pub numeric: bool,
+}
+
+impl<'a> TableHeader<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self {
+            label,
+            numeric: false,
+        }
+    }
+
+    pub const fn numeric(label: &'a str) -> Self {
+        Self {
+            label,
+            numeric: true,
+        }
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.numeric { "num" } else { "" }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TableCell<'a> {
+    pub text: &'a str,
+    pub numeric: bool,
+    pub strong: bool,
+    pub muted: bool,
+}
+
+impl<'a> TableCell<'a> {
+    pub const fn new(text: &'a str) -> Self {
+        Self {
+            text,
+            numeric: false,
+            strong: false,
+            muted: false,
+        }
+    }
+
+    pub const fn numeric(text: &'a str) -> Self {
+        Self {
+            numeric: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub const fn strong(text: &'a str) -> Self {
+        Self {
+            strong: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub const fn muted(text: &'a str) -> Self {
+        Self {
+            muted: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub fn class_name(&self) -> String {
+        let numeric = if self.numeric { "num" } else { "" };
+        let strong = if self.strong { " strong" } else { "" };
+        let muted = if self.muted { " muted" } else { "" };
+        format!("{numeric}{strong}{muted}")
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TableRow<'a> {
+    pub cells: &'a [TableCell<'a>],
+    pub selected: bool,
+}
+
+impl<'a> TableRow<'a> {
+    pub const fn new(cells: &'a [TableCell<'a>]) -> Self {
+        Self {
+            cells,
+            selected: false,
+        }
+    }
+
+    pub const fn selected(mut self) -> Self {
+        self.selected = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/table.html")]
+pub struct Table<'a> {
+    pub headers: &'a [TableHeader<'a>],
+    pub rows: &'a [TableRow<'a>],
+    pub flush: bool,
+    pub interactive: bool,
+    pub sticky: bool,
+    pub pin_last: bool,
+}
+
+impl<'a> Table<'a> {
+    pub const fn new(headers: &'a [TableHeader<'a>], rows: &'a [TableRow<'a>]) -> Self {
+        Self {
+            headers,
+            rows,
+            flush: false,
+            interactive: false,
+            sticky: false,
+            pin_last: false,
+        }
+    }
+
+    pub const fn flush(mut self) -> Self {
+        self.flush = true;
+        self
+    }
+
+    pub const fn interactive(mut self) -> Self {
+        self.interactive = true;
+        self
+    }
+
+    pub const fn sticky(mut self) -> Self {
+        self.sticky = true;
+        self
+    }
+
+    pub const fn pin_last(mut self) -> Self {
+        self.pin_last = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let flush = if self.flush { " flush" } else { "" };
+        let interactive = if self.interactive {
+            " is-interactive"
+        } else {
+            ""
+        };
+        let sticky = if self.sticky { " sticky" } else { "" };
+        let pin_last = if self.pin_last { " pin-last" } else { "" };
+        format!("wf-table{flush}{interactive}{sticky}{pin_last}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Table<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct DefinitionItem<'a> {
+    pub term: &'a str,
+    pub description: &'a str,
+}
+
+impl<'a> DefinitionItem<'a> {
+    pub const fn new(term: &'a str, description: &'a str) -> Self {
+        Self { term, description }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/definition_list.html")]
+pub struct DefinitionList<'a> {
+    pub items: &'a [DefinitionItem<'a>],
+    pub flush: bool,
+}
+
+impl<'a> DefinitionList<'a> {
+    pub const fn new(items: &'a [DefinitionItem<'a>]) -> Self {
+        Self {
+            items,
+            flush: false,
+        }
+    }
+
+    pub const fn flush(mut self) -> Self {
+        self.flush = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.flush { "wf-dl flush" } else { "wf-dl" }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for DefinitionList<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/grid.html")]
+pub struct Grid<'a> {
+    pub content_html: TrustedHtml<'a>,
+    pub columns: u8,
+}
+
+impl<'a> Grid<'a> {
+    pub const fn new(content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            content_html,
+            columns: 2,
+        }
+    }
+
+    pub const fn with_columns(mut self, columns: u8) -> Self {
+        self.columns = columns;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        format!("wf-grid cols-{}", self.columns)
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Grid<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/split.html")]
+pub struct Split<'a> {
+    pub content_html: TrustedHtml<'a>,
+    pub vertical: bool,
+}
+
+impl<'a> Split<'a> {
+    pub const fn new(content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            content_html,
+            vertical: false,
+        }
+    }
+
+    pub const fn vertical(mut self) -> Self {
+        self.vertical = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.vertical {
+            "wf-split vertical"
+        } else {
+            "wf-split"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Split<'a> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1027,5 +1905,101 @@ mod tests {
         assert!(range_html.contains(r#"class="wf-range""#));
         assert!(range_html.contains(r#"min="0""#));
         assert!(field_html.contains(r#"class="wf-field is-success""#));
+    }
+
+    #[test]
+    fn layout_navigation_and_data_primitives_render_expected_markup() {
+        let panel = Panel::new("Deployments", TrustedHtml::new("<p>Ready</p>"))
+            .with_action(TrustedHtml::new(
+                r#"<a class="wf-panel-link" href="/all">All</a>"#,
+            ))
+            .render()
+            .unwrap();
+        let card = Card::new("Project <alpha>", TrustedHtml::new("<p>Live</p>"))
+            .with_kicker("Status")
+            .raised()
+            .render()
+            .unwrap();
+        let stats = [Stat::new("Requests", "42").with_unit("rpm")];
+        let stat_row = StatRow::new(&stats).render().unwrap();
+        let badge = Badge::muted("beta").render().unwrap();
+        let avatar = Avatar::new("SN").accent().render().unwrap();
+        let crumbs = [
+            BreadcrumbItem::link("Projects", "/projects"),
+            BreadcrumbItem::current("Wavefunk <UI>"),
+        ];
+        let breadcrumbs = Breadcrumbs::new(&crumbs).render().unwrap();
+        let tabs = [
+            TabItem::link("Overview", "/").active(),
+            TabItem::link("Settings", "/settings"),
+        ];
+        let tab_html = Tabs::new(&tabs).render().unwrap();
+        let segments = [
+            SegmentOption::new("List", "list").active(),
+            SegmentOption::new("Grid", "grid"),
+        ];
+        let seg_html = SegmentedControl::new(&segments).render().unwrap();
+        let pages = [
+            PageLink::link("1", "/page/1").active(),
+            PageLink::ellipsis(),
+            PageLink::disabled("Next"),
+        ];
+        let pagination = Pagination::new(&pages).render().unwrap();
+        let nav_section = NavSection::new("Workspace").render().unwrap();
+        let nav_item = NavItem::new("Dashboard", "/").active().with_count("3");
+        let topbar = Topbar::new(TrustedHtml::new(&breadcrumbs), TrustedHtml::new(&badge))
+            .render()
+            .unwrap();
+        let statusbar = Statusbar::new("Connected", "v0.1").render().unwrap();
+        let empty = EmptyState::new("No hooks", "Create a hook to start.")
+            .with_glyph(TrustedHtml::new("&empty;"))
+            .bordered()
+            .render()
+            .unwrap();
+        let table_headers = [TableHeader::new("Name"), TableHeader::numeric("Runs")];
+        let table_cells = [TableCell::strong("Build <main>"), TableCell::numeric("12")];
+        let table_rows = [TableRow::new(&table_cells).selected()];
+        let table = Table::new(&table_headers, &table_rows)
+            .interactive()
+            .render()
+            .unwrap();
+        let dl_items = [DefinitionItem::new("Runtime", "Rust <stable>")];
+        let dl = DefinitionList::new(&dl_items).render().unwrap();
+        let grid = Grid::new(TrustedHtml::new(&card))
+            .with_columns(2)
+            .render()
+            .unwrap();
+        let split = Split::new(TrustedHtml::new(&panel))
+            .vertical()
+            .render()
+            .unwrap();
+
+        assert!(panel.contains(r#"class="wf-panel""#));
+        assert!(card.contains(r#"class="wf-card is-raised""#));
+        assert!(!card.contains("Project <alpha>"));
+        assert!(stat_row.contains(r#"class="wf-stat-row""#));
+        assert!(badge.contains(r#"class="wf-badge muted""#));
+        assert!(avatar.contains(r#"class="wf-avatar accent""#));
+        assert!(breadcrumbs.contains(r#"class="wf-crumbs""#));
+        assert!(!breadcrumbs.contains("Wavefunk <UI>"));
+        assert!(tab_html.contains(r#"class="wf-tabs""#));
+        assert!(seg_html.contains(r#"class="wf-seg""#));
+        assert!(pagination.contains(r#"class="wf-pagination""#));
+        assert!(nav_section.contains(r#"class="wf-nav-section""#));
+        assert!(
+            nav_item
+                .render()
+                .unwrap()
+                .contains(r#"class="wf-nav-item is-active""#)
+        );
+        assert!(topbar.contains(r#"class="wf-topbar""#));
+        assert!(statusbar.contains(r#"class="wf-statusbar wf-hair""#));
+        assert!(empty.contains(r#"class="wf-empty bordered""#));
+        assert!(table.contains(r#"class="wf-table is-interactive""#));
+        assert!(!table.contains("Build <main>"));
+        assert!(dl.contains(r#"class="wf-dl""#));
+        assert!(!dl.contains("Rust <stable>"));
+        assert!(grid.contains(r#"class="wf-grid cols-2""#));
+        assert!(split.contains(r#"class="wf-split vertical""#));
     }
 }

@@ -1,0 +1,5 @@
+<div class="{{ self.class_name() }}">
+{%- for option in options -%}
+  <button class="wf-seg-opt{% if option.active %} is-active{% endif %}" type="button" value="{{ option.value }}">{{ option.label }}</button>
+{%- endfor -%}
+</div>

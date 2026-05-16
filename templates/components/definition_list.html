@@ -1,0 +1,8 @@
+<dl class="{{ self.class_name() }}">
+{%- for item in items -%}
+  <div class="wf-dl-row">
+    <dt>{{ item.term }}</dt>
+    <dd>{{ item.description }}</dd>
+  </div>
+{%- endfor -%}
+</dl>

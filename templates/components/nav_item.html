@@ -1,0 +1,8 @@
+<a class="{{ self.class_name() }}" href="{{ href }}"{% if active %} aria-current="page"{% endif %}>
+  <span>{{ label }}</span>
+  {%- match count -%}
+  {%- when Some with (text) -%}
+  <span class="wf-nav-count">{{ text }}</span>
+  {%- when None -%}
+  {%- endmatch -%}
+</a>

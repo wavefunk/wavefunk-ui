@@ -1,0 +1,8 @@
+<span class="{{ self.class_name() }}">
+  {%- match image_src -%}
+  {%- when Some with (src) -%}
+  <img src="{{ src }}" alt="{{ initials }}">
+  {%- when None -%}
+  {{ initials }}
+  {%- endmatch -%}
+</span>

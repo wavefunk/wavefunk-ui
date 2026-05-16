@@ -1,0 +1,25 @@
+<div class="wf-stat-row">
+{%- for stat in stats -%}
+  <div class="wf-stat">
+    <span class="wf-stat-label">{{ stat.label }}</span>
+    <div class="wf-stat-valuerow">
+      <span class="wf-stat-value">{{ stat.value }}</span>
+      {%- match stat.unit -%}
+      {%- when Some with (text) -%}
+      <span class="wf-stat-unit">{{ text }}</span>
+      {%- when None -%}
+      {%- endmatch -%}
+      {%- match stat.delta -%}
+      {%- when Some with (text) -%}
+      <span class="{{ stat.delta_class() }}">{{ text }}</span>
+      {%- when None -%}
+      {%- endmatch -%}
+    </div>
+    {%- match stat.foot -%}
+    {%- when Some with (text) -%}
+    <div class="wf-stat-foot">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+{%- endfor -%}
+</div>

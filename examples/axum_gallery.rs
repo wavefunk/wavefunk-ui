@@ -1,9 +1,12 @@
 use askama::Template;
 use axum::{Router, response::Html, routing::get};
 use wavefunk_ui::components::{
-    Alert, Button, ButtonGroup, CheckRow, FeedbackKind, Field, FieldState, HtmlAttr, IconButton,
-    Input, InputGroup, Range, Select, SelectOption, SplitButton, Switch, Tag, Textarea,
-    TrustedHtml,
+    Alert, Avatar, Badge, BreadcrumbItem, Breadcrumbs, Button, ButtonGroup, Card, CheckRow,
+    DefinitionItem, DefinitionList, EmptyState, FeedbackKind, Field, FieldState, Grid, HtmlAttr,
+    IconButton, Input, InputGroup, NavItem, NavSection, PageLink, Pagination, Panel, Range,
+    SegmentOption, SegmentedControl, Select, SelectOption, Split, SplitButton, Stat, StatRow,
+    Statusbar, Switch, TabItem, Table, TableCell, TableHeader, TableRow, Tabs, Tag, Textarea,
+    Topbar, TrustedHtml,
 };
 use wavefunk_ui::layouts::AppShell;
 
@@ -47,6 +50,7 @@ struct GalleryNav;
       </div>
       {{ range }}
     </div>
+    {{ layout_showcase }}
   </div>
 </section>
 "#,
@@ -69,7 +73,66 @@ struct GalleryContent<'a> {
     radio: CheckRow<'a>,
     switch_control: Switch<'a>,
     range: Range<'a>,
+    layout_showcase: LayoutShowcase<'a>,
 }
+
+#[derive(Template)]
+#[template(
+    source = r#"
+<section class="wf-panel">
+  <div class="wf-panel-head">
+    <div class="wf-panel-title">Layout and data display</div>
+    {{ badge }}
+  </div>
+  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+    {{ topbar }}
+    <div style="display: grid; gap: var(--space-2); max-width: 280px;">
+      {{ nav_section }}
+      {{ nav_item }}
+    </div>
+    {{ breadcrumbs }}
+    {{ tabs }}
+    {{ segmented }}
+    {{ pagination }}
+    {{ stat_row }}
+    <div style="display: flex; gap: var(--space-3); align-items: center;">
+      {{ avatar }}
+      {{ card }}
+    </div>
+    {{ panel }}
+    {{ table }}
+    {{ definition_list }}
+    {{ empty_state }}
+    {{ grid }}
+    {{ split }}
+    {{ statusbar }}
+  </div>
+</section>
+"#,
+    ext = "html"
+)]
+struct LayoutShowcase<'a> {
+    panel: Panel<'a>,
+    card: Card<'a>,
+    stat_row: StatRow<'a>,
+    badge: Badge<'a>,
+    avatar: Avatar<'a>,
+    breadcrumbs: Breadcrumbs<'a>,
+    tabs: Tabs<'a>,
+    segmented: SegmentedControl<'a>,
+    pagination: Pagination<'a>,
+    nav_section: NavSection<'a>,
+    nav_item: NavItem<'a>,
+    topbar: Topbar<'a>,
+    statusbar: Statusbar<'a>,
+    empty_state: EmptyState<'a>,
+    table: Table<'a>,
+    definition_list: DefinitionList<'a>,
+    grid: Grid<'a>,
+    split: Split<'a>,
+}
+
+impl askama::filters::HtmlSafe for LayoutShowcase<'_> {}
 
 #[tokio::main]
 async fn main() {
@@ -98,6 +161,34 @@ async fn index() -> Html<String> {
         SelectOption::new("team", "Team").selected(),
         SelectOption::new("enterprise", "Enterprise"),
     ];
+    let stats = [
+        Stat::new("Requests", "42").with_unit("rpm"),
+        Stat::new("Errors", "0"),
+    ];
+    let crumbs = [
+        BreadcrumbItem::link("Workspace", "/"),
+        BreadcrumbItem::current("Gallery"),
+    ];
+    let tabs = [
+        TabItem::link("Overview", "/").active(),
+        TabItem::link("Settings", "/settings"),
+    ];
+    let segments = [
+        SegmentOption::new("List", "list").active(),
+        SegmentOption::new("Grid", "grid"),
+    ];
+    let pages = [
+        PageLink::link("1", "/page/1").active(),
+        PageLink::ellipsis(),
+        PageLink::disabled("Next"),
+    ];
+    let table_headers = [TableHeader::new("Name"), TableHeader::numeric("Runs")];
+    let table_cells = [TableCell::strong("Build"), TableCell::numeric("12")];
+    let table_rows = [TableRow::new(&table_cells).selected()];
+    let definition_items = [
+        DefinitionItem::new("Runtime", "Rust"),
+        DefinitionItem::new("Assets", "Embedded"),
+    ];
     let grouped_input = Input::url("site_url")
         .with_placeholder("wavefunk.test")
         .render()
@@ -106,6 +197,13 @@ async fn index() -> Html<String> {
         .with_value("Substrukt")
         .render()
         .expect("render success input");
+    let breadcrumbs_html = Breadcrumbs::new(&crumbs)
+        .render()
+        .expect("render breadcrumbs");
+    let topbar_badge_html = Badge::muted("live").render().expect("render topbar badge");
+    let card_for_grid = Card::new("Card", TrustedHtml::new("<p>Grid item</p>"))
+        .render()
+        .expect("render grid card");
     let nav = GalleryNav.render().expect("render gallery nav");
     let content = GalleryContent {
         tag: Tag::status(FeedbackKind::Ok, "Embedded assets"),
@@ -139,6 +237,38 @@ async fn index() -> Html<String> {
         range: Range::new("signal")
             .with_bounds("0", "100")
             .with_value("64"),
+        layout_showcase: LayoutShowcase {
+            panel: Panel::new("Panel", TrustedHtml::new("<p>Panel body</p>")).with_action(
+                TrustedHtml::new(r#"<a class="wf-panel-link" href="/panel">Open</a>"#),
+            ),
+            card: Card::new("Card", TrustedHtml::new("<p>Card body</p>"))
+                .with_kicker("Raised")
+                .raised(),
+            stat_row: StatRow::new(&stats),
+            badge: Badge::muted("layout"),
+            avatar: Avatar::new("WF").accent(),
+            breadcrumbs: Breadcrumbs::new(&crumbs),
+            tabs: Tabs::new(&tabs),
+            segmented: SegmentedControl::new(&segments),
+            pagination: Pagination::new(&pages),
+            nav_section: NavSection::new("Workspace"),
+            nav_item: NavItem::new("Dashboard", "/").active().with_count("3"),
+            topbar: Topbar::new(
+                TrustedHtml::new(&breadcrumbs_html),
+                TrustedHtml::new(&topbar_badge_html),
+            ),
+            statusbar: Statusbar::new("Connected", "v0.1"),
+            empty_state: EmptyState::new("No rows", "Create an item to start.")
+                .with_glyph(TrustedHtml::new("&empty;"))
+                .bordered(),
+            table: Table::new(&table_headers, &table_rows).interactive(),
+            definition_list: DefinitionList::new(&definition_items),
+            grid: Grid::new(TrustedHtml::new(&card_for_grid)).with_columns(2),
+            split: Split::new(TrustedHtml::new(
+                "<div>Primary pane</div><div>Secondary pane</div>",
+            ))
+            .vertical(),
+        },
     }
     .render()
     .expect("render gallery content");

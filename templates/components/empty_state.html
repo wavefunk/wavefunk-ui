@@ -1,0 +1,14 @@
+<div class="{{ self.class_name() }}">
+  {%- match glyph_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-empty-glyph">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-empty-title">{{ title }}</div>
+  <div class="wf-empty-body">{{ body }}</div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-empty-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

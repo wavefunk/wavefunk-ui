@@ -1,0 +1,11 @@
+<section class="{{ self.class_name() }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <div class="wf-panel-head">
+    <div class="wf-panel-title">{{ title }}</div>
+    {%- match action_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-panel-body">{{ body_html }}</div>
+</section>

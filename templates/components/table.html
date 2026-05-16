@@ -1,0 +1,18 @@
+<table class="{{ self.class_name() }}">
+  <thead>
+    <tr>
+      {%- for header in headers -%}
+      <th class="{{ header.class_name() }}">{{ header.label }}</th>
+      {%- endfor -%}
+    </tr>
+  </thead>
+  <tbody>
+    {%- for row in rows -%}
+    <tr{% if row.selected %} class="is-selected" aria-selected="true"{% endif %}>
+      {%- for cell in row.cells -%}
+      <td class="{{ cell.class_name() }}">{{ cell.text }}</td>
+      {%- endfor -%}
+    </tr>
+    {%- endfor -%}
+  </tbody>
+</table>

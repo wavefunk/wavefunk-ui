@@ -1,0 +1,14 @@
+<article class="{{ self.class_name() }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match kicker -%}
+  {%- when Some with (text) -%}
+  <span class="wf-card-kicker">{{ text }}</span>
+  {%- when None -%}
+  {%- endmatch -%}
+  <h3 class="wf-card-title">{{ title }}</h3>
+  <div class="wf-card-body">{{ body_html }}</div>
+  {%- match foot_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-card-foot">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</article>

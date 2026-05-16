@@ -1,0 +1,5 @@
+<nav class="wf-tabs" aria-label="Tabs">
+{%- for item in items -%}
+  <a href="{{ item.href }}"{% if item.active %} class="is-active" aria-current="page"{% endif %}>{{ item.label }}</a>
+{%- endfor -%}
+</nav>
