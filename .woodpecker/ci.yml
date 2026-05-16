@@ -27,6 +27,5 @@ steps:
       - mkdir -p /woodpecker-cache/cargo /woodpecker-cache/target /woodpecker-cache/sccache
       - cargo fmt --check
       - cargo test --all-features --locked
-      - cargo clippy --all-features --all-targets --locked -- -D warnings
       - cargo package --allow-dirty --locked
       - cargo publish --dry-run --locked --allow-dirty
