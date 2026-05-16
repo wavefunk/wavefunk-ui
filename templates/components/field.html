@@ -1,6 +1,6 @@
 <label class="{{ self.class_name() }}">
   <span class="wf-label">{{ label }}</span>
-  {{ control_html|safe }}
+  {{ control_html }}
   {%- match hint -%}
   {%- when Some with (text) -%}
   <span class="wf-field-hint">{{ text }}</span>

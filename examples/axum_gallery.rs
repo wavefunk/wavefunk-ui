@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::{Router, response::Html, routing::get};
-use wavefunk_ui::components::{Alert, Button, FeedbackKind, HtmlAttr, Tag};
+use wavefunk_ui::components::{Alert, Button, FeedbackKind, Field, HtmlAttr, Tag, TrustedHtml};
 use wavefunk_ui::layouts::AppShell;
 
 #[derive(Template)]
@@ -23,6 +23,7 @@ struct GalleryNav;
   </div>
   <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
     {{ alert }}
+    {{ field }}
     <div>{{ button }}</div>
   </div>
 </section>
@@ -32,6 +33,7 @@ struct GalleryNav;
 struct GalleryContent<'a> {
     tag: Tag<'a>,
     alert: Alert<'a>,
+    field: Field<'a>,
     button: Button<'a>,
 }
 
@@ -51,10 +53,7 @@ async fn main() {
 }
 
 async fn index() -> Html<String> {
-    let toast_attrs = [
-        HtmlAttr::new("hx-get", "/toast"),
-        HtmlAttr::new("hx-swap", "none"),
-    ];
+    let toast_attrs = [HtmlAttr::hx_get("/toast"), HtmlAttr::hx_swap("none")];
     let nav = GalleryNav.render().expect("render gallery nav");
     let content = GalleryContent {
         tag: Tag::status(FeedbackKind::Ok, "Embedded assets"),
@@ -62,10 +61,12 @@ async fn index() -> Html<String> {
             FeedbackKind::Info,
             "wavefunk-ui components render as nested Askama values.",
         ),
-        button: Button {
-            attrs: &toast_attrs,
-            ..Button::primary("Toast")
-        },
+        field: Field::new(
+            "Email",
+            TrustedHtml::new(r#"<input class="wf-input" name="email" type="email">"#),
+        )
+        .with_hint("Trusted slots keep form markup explicit."),
+        button: Button::primary("Toast").with_attrs(&toast_attrs),
     }
     .render()
     .expect("render gallery content");

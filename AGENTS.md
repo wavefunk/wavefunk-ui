@@ -39,6 +39,16 @@ Do not run bare repo commands outside `direnv exec .`; the direnv environment su
 
 For browser checks, use the globally installed `agent-browser`. Do not add browser runtime dependencies to `flake.nix` for this repo.
 
+## Component API Contract
+
+Expose typed Askama template structs from modules such as `components` and `layouts`. Use consistent `Type::new(...)` constructors, named variant constructors, and by-value `with_*` builders for optional state. Consumer examples should use the constructors and builders, not struct literals, so new fields can be added without semver breakage.
+
+Use `HtmlAttr` helpers for common htmx attributes. Attribute values and normal text are escaped by Askama. If a component needs an inner markup slot, require `TrustedHtml` or an equivalent explicit trusted wrapper; do not add anonymous `&str` fields that templates render with `|safe`.
+
+Keep feature flags additive. The default crate should stay framework-neutral, with adapters such as Axum behind opt-in features.
+
+Render errors should remain visible to consumers through Askama's render result. Do not hide rendering failures in shared component code.
+
 ## Issue Tracking
 
 Use `br` for task tracking. Do not use `bd` or Dolt-backed workflows.

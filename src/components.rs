@@ -1,4 +1,5 @@
 use askama::Template;
+use std::fmt;
 
 #[derive(Clone, Copy, Debug)]
 pub struct HtmlAttr<'a> {
@@ -10,7 +11,62 @@ impl<'a> HtmlAttr<'a> {
     pub const fn new(name: &'a str, value: &'a str) -> Self {
         Self { name, value }
     }
+
+    pub const fn hx_get(value: &'a str) -> Self {
+        Self::new("hx-get", value)
+    }
+
+    pub const fn hx_post(value: &'a str) -> Self {
+        Self::new("hx-post", value)
+    }
+
+    pub const fn hx_put(value: &'a str) -> Self {
+        Self::new("hx-put", value)
+    }
+
+    pub const fn hx_patch(value: &'a str) -> Self {
+        Self::new("hx-patch", value)
+    }
+
+    pub const fn hx_delete(value: &'a str) -> Self {
+        Self::new("hx-delete", value)
+    }
+
+    pub const fn hx_target(value: &'a str) -> Self {
+        Self::new("hx-target", value)
+    }
+
+    pub const fn hx_swap(value: &'a str) -> Self {
+        Self::new("hx-swap", value)
+    }
+
+    pub const fn hx_trigger(value: &'a str) -> Self {
+        Self::new("hx-trigger", value)
+    }
 }
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TrustedHtml<'a> {
+    html: &'a str,
+}
+
+impl<'a> TrustedHtml<'a> {
+    pub const fn new(html: &'a str) -> Self {
+        Self { html }
+    }
+
+    pub const fn as_str(self) -> &'a str {
+        self.html
+    }
+}
+
+impl fmt::Display for TrustedHtml<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.html)
+    }
+}
+
+impl askama::filters::HtmlSafe for TrustedHtml<'_> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ButtonVariant {
@@ -49,6 +105,7 @@ impl ButtonSize {
 }
 
 #[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/button.html")]
 pub struct Button<'a> {
     pub label: &'a str,
@@ -87,6 +144,36 @@ impl<'a> Button<'a> {
         }
     }
 
+    pub const fn with_href(mut self, href: &'a str) -> Self {
+        self.href = Some(href);
+        self
+    }
+
+    pub const fn with_variant(mut self, variant: ButtonVariant) -> Self {
+        self.variant = variant;
+        self
+    }
+
+    pub const fn with_size(mut self, size: ButtonSize) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub const fn with_button_type(mut self, button_type: &'a str) -> Self {
+        self.button_type = button_type;
+        self
+    }
+
     pub fn class_name(&self) -> String {
         format!("wf-btn{}{}", self.variant.class(), self.size.class())
     }
@@ -114,6 +201,7 @@ impl FeedbackKind {
 }
 
 #[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/alert.html")]
 pub struct Alert<'a> {
     pub kind: FeedbackKind,
@@ -130,6 +218,11 @@ impl<'a> Alert<'a> {
         }
     }
 
+    pub const fn with_title(mut self, title: &'a str) -> Self {
+        self.title = Some(title);
+        self
+    }
+
     pub fn class_name(&self) -> String {
         format!("wf-alert {}", self.kind.class())
     }
@@ -138,6 +231,7 @@ impl<'a> Alert<'a> {
 impl<'a> askama::filters::HtmlSafe for Alert<'a> {}
 
 #[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/tag.html")]
 pub struct Tag<'a> {
     pub kind: Option<FeedbackKind>,
@@ -160,6 +254,16 @@ impl<'a> Tag<'a> {
             label,
             dot: true,
         }
+    }
+
+    pub const fn with_kind(mut self, kind: FeedbackKind) -> Self {
+        self.kind = Some(kind);
+        self
+    }
+
+    pub const fn with_dot(mut self) -> Self {
+        self.dot = true;
+        self
     }
 
     pub fn class_name(&self) -> String {
@@ -190,22 +294,33 @@ impl FieldState {
 }
 
 #[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/field.html")]
 pub struct Field<'a> {
     pub label: &'a str,
-    pub control_html: &'a str,
+    pub control_html: TrustedHtml<'a>,
     pub hint: Option<&'a str>,
     pub state: FieldState,
 }
 
 impl<'a> Field<'a> {
-    pub const fn new(label: &'a str, control_html: &'a str) -> Self {
+    pub const fn new(label: &'a str, control_html: TrustedHtml<'a>) -> Self {
         Self {
             label,
             control_html,
             hint: None,
             state: FieldState::Default,
         }
+    }
+
+    pub const fn with_hint(mut self, hint: &'a str) -> Self {
+        self.hint = Some(hint);
+        self
+    }
+
+    pub const fn with_state(mut self, state: FieldState) -> Self {
+        self.state = state;
+        self
     }
 
     pub fn class_name(&self) -> String {
@@ -221,16 +336,29 @@ mod tests {
 
     #[test]
     fn renders_button_with_htmx_attrs() {
-        let attrs = [HtmlAttr::new("hx-post", "/save")];
-        let html = Button {
-            attrs: &attrs,
-            ..Button::primary("Save")
-        }
+        let attrs = [HtmlAttr::hx_post("/save?next=<home>")];
+        let html = Button::primary("Save").with_attrs(&attrs).render().unwrap();
+
+        assert!(html.contains(r#"class="wf-btn primary""#));
+        assert!(html.contains(r#"hx-post="/save?next="#));
+        assert!(!html.contains(r#"hx-post="/save?next=<home>""#));
+    }
+
+    #[test]
+    fn field_escapes_copy_and_renders_trusted_control_html() {
+        let html = Field::new(
+            "Email <required>",
+            TrustedHtml::new(r#"<input class="wf-input" name="email">"#),
+        )
+        .with_hint("Use <work> address")
         .render()
         .unwrap();
 
-        assert!(html.contains(r#"class="wf-btn primary""#));
-        assert!(html.contains(r#"hx-post="/save""#));
+        assert!(html.contains("Email"));
+        assert!(!html.contains("Email <required>"));
+        assert!(html.contains(r#"<input class="wf-input" name="email">"#));
+        assert!(html.contains("Use"));
+        assert!(!html.contains("Use <work> address"));
     }
 
     #[derive(Template)]
