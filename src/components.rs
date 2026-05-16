@@ -66,6 +66,13 @@ impl fmt::Display for TrustedHtml<'_> {
     }
 }
 
+impl askama::FastWritable for TrustedHtml<'_> {
+    #[inline]
+    fn write_into(&self, dest: &mut dyn fmt::Write, _: &dyn askama::Values) -> askama::Result<()> {
+        Ok(dest.write_str(self.html)?)
+    }
+}
+
 impl askama::filters::HtmlSafe for TrustedHtml<'_> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -2258,6 +2265,20 @@ mod tests {
         assert!(html.contains(r#"<input class="wf-input" name="email">"#));
         assert!(html.contains("Use"));
         assert!(!html.contains("Use <work> address"));
+    }
+
+    #[test]
+    fn trusted_html_writes_without_formatter_allocation() {
+        let mut html = String::new();
+
+        askama::FastWritable::write_into(
+            &TrustedHtml::new("<strong>Ready</strong>"),
+            &mut html,
+            askama::NO_VALUES,
+        )
+        .unwrap();
+
+        assert_eq!(html, "<strong>Ready</strong>");
     }
 
     #[derive(Template)]

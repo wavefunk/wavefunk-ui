@@ -125,6 +125,10 @@ Use Askama's `render`, `render_into`, or `write_into` methods for template outpu
 
 This crate optimizes `askama_derive` in the dev profile so local incremental builds stay practical as the component template set grows.
 
+Askama-derived templates already implement `FastWritable`. `TrustedHtml` implements it manually because component slots pass trusted markup through repeatedly; add manual implementations only for non-template wrapper types that show up in hot render paths and can write directly to `fmt::Write`.
+
+Cached local rebuild check on 2026-05-16: after touching `src/components.rs`, `cargo check --all-features --example axum_gallery` completed in 1.10s real time. The gallery is the template-heavy smoke target for local path override iteration.
+
 ## Local Consumer Iteration
 
 Committed Wave Funk consumers should depend on the crates.io version:

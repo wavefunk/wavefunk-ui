@@ -80,3 +80,7 @@ cargo package --allow-dirty
 Use Askama's own `render`, `render_into`, or `write_into` methods for template output. Avoid `to_string()` or `format!()` for templates in hot paths.
 
 `Cargo.toml` keeps `profile.dev.package.askama_derive.opt-level = 3` so local incremental rebuilds remain workable as this crate accumulates templates.
+
+Askama-derived templates already implement `FastWritable`. `TrustedHtml` implements it manually because component slots pass trusted markup through repeatedly; add manual implementations only for non-template wrapper types that show up in hot render paths and can write directly to `fmt::Write`.
+
+Cached local rebuild check on 2026-05-16: after touching `src/components.rs`, `cargo check --all-features --example axum_gallery` completed in 1.10s real time. The gallery is the template-heavy smoke target for local path override iteration.
