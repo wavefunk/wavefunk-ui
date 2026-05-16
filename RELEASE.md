@@ -20,10 +20,9 @@ For browser release smoke:
 
 ```bash
 direnv exec . just gallery
-direnv exec . agent-browser open http://127.0.0.1:3000
 ```
 
-Check the page loads, embedded CSS/fonts/scripts return 200, toast/echo htmx interactions work, and light/dark plus dense/default variants render without console errors.
+Open `http://127.0.0.1:3000` in a browser. Check the page loads, embedded CSS/fonts/scripts return 200, toast/echo htmx interactions work, and light/dark plus dense/default variants render without console errors.
 
 ## Woodpecker
 
