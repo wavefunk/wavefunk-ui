@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-mode="{{ mode }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  {{ self.stylesheet_link()|safe }}
+  {{ self.htmx_script_link()|safe }}
+  {{ self.script_link()|safe }}
+</head>
+<body class="wf-app {{ density_class }}" hx-boost="true">
+  <div class="wf-shell">
+    <aside class="wf-sidebar">
+      <div class="wf-brand">
+        <span class="wf-brand-name">{{ app_name }}</span>
+      </div>
+      <nav class="wf-nav-list">
+        {{ nav_html|safe }}
+      </nav>
+    </aside>
+
+    <div class="wf-main">
+      <header class="wf-topbar">
+        <div class="wf-crumbs">
+          <span aria-current="page">{{ app_name }}</span>
+        </div>
+        <div class="wf-grow"></div>
+        {{ actions_html|safe }}
+      </header>
+
+      <main class="wf-scroll">
+        {{ content_html|safe }}
+      </main>
+
+      <div class="wf-statusbar wf-hair">
+        <span>{{ status_left }}</span>
+        <span class="wf-grow"></span>
+        <span>{{ status_right }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wf-toast-host" id="toast-host"></div>
+</body>
+</html>

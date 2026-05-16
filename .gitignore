@@ -1,0 +1,12 @@
+/target
+/.direnv/
+/.envrc.private
+.env
+/rustc-ice-*
+/.cargo/
+/.codex/summaries/
+/.codex/skills/
+/.claude/summaries/
+/.claude/worktrees/
+docs/superpowers/
+.beads-credential-key

@@ -1,0 +1,6 @@
+{%- match href -%}
+{%- when Some with (url) -%}
+<a class="{{ self.class_name() }}" href="{{ url }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ label }}</a>
+{%- when None -%}
+<button class="{{ self.class_name() }}" type="{{ button_type }}"{% if disabled %} disabled{% endif %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ label }}</button>
+{%- endmatch -%}

@@ -1,0 +1,9 @@
+<label class="{{ self.class_name() }}">
+  <span class="wf-label">{{ label }}</span>
+  {{ control_html|safe }}
+  {%- match hint -%}
+  {%- when Some with (text) -%}
+  <span class="wf-field-hint">{{ text }}</span>
+  {%- when None -%}
+  {%- endmatch -%}
+</label>

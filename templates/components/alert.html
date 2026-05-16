@@ -1,0 +1,11 @@
+<div class="{{ self.class_name() }}">
+  <div class="wf-alert-bar"></div>
+  <div>
+    {%- match title -%}
+    {%- when Some with (text) -%}
+    <div class="wf-alert-kicker">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+    <div>{{ message }}</div>
+  </div>
+</div>

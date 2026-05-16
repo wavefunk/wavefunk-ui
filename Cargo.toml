@@ -1,0 +1,49 @@
+[package]
+name = "wavefunk-ui"
+version = "0.1.0"
+authors = ["wavefunk"]
+description = "Askama and htmx UI component base for Wave Funk Rust applications."
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/wavefunk/wavefunk-ui"
+readme = "README.md"
+keywords = ["ui", "askama", "htmx", "components", "wavefunk"]
+categories = ["template-engine", "web-programming"]
+include = [
+    "src/**",
+    "templates/**",
+    "static/wavefunk/**",
+    "examples/**",
+    "/Cargo.toml",
+    "/README.md",
+    "/LICENSE",
+    "/LICENSES.htmx.txt",
+]
+
+[lib]
+name = "wavefunk_ui"
+path = "src/lib.rs"
+
+[features]
+default = []
+axum = ["dep:axum"]
+
+[dependencies]
+askama = "0.16"
+rust-embed = { version = "8.11", features = ["debug-embed"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = { version = "0.8", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[profile.dev]
+incremental = true
+
+[profile.dev.package.askama_derive]
+opt-level = 3
+
+[profile.dist]
+inherits = "release"
+lto = "thin"
