@@ -1,0 +1,9 @@
+<div class="mk-steps">
+  {%- for step in steps -%}
+  <div class="mk-step">
+    <div class="mk-step-num">{{ loop.index }}</div>
+    <h3 class="mk-step-t">{{ step.title }}</h3>
+    <p class="mk-step-b">{{ step.body }}</p>
+  </div>
+  {%- endfor -%}
+</div>

@@ -1,0 +1,12 @@
+<ul{% if !nested %} class="{{ self.class_name() }}"{% endif %}>
+  {%- for item in items -%}
+  <li{% if !item.item_class().is_empty() %} class="{{ item.item_class() }}"{% endif %}>
+    <span class="{{ item.label_class() }}">{{ item.label }}</span>
+    {%- match item.children_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+  </li>
+  {%- endfor -%}
+</ul>

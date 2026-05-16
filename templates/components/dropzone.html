@@ -1,0 +1,12 @@
+<label class="{{ self.class_name() }}">
+  <input class="wf-dropzone-input" type="file" name="{{ name }}"{% match accept %}{% when Some with (value) %} accept="{{ value }}"{% when None %}{% endmatch %}{% if multiple %} multiple{% endif %}{% if disabled %} disabled{% endif %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <div class="wf-dropzone-frame">
+    <div class="wf-dropzone-glyph">v</div>
+    <div class="wf-dropzone-title">{{ title }}</div>
+    {%- match hint -%}
+    {%- when Some with (text) -%}
+    <div class="wf-dropzone-hint">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+</label>

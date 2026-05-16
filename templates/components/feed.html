@@ -1,0 +1,9 @@
+<div class="wf-feed">
+  {%- for row in rows -%}
+  <div class="wf-feed-row">
+    <div class="wf-feed-t">{{ row.time }}</div>
+    <div class="wf-feed-kicker">{{ row.kicker }}</div>
+    <div class="wf-feed-text">{{ row.text }}</div>
+  </div>
+  {%- endfor -%}
+</div>

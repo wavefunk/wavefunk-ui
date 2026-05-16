@@ -1,0 +1,3 @@
+<form class="wf-form"{% match action %}{% when Some with (value) %} action="{{ value }}"{% when None %}{% endmatch %} method="{{ method }}"{% match enctype %}{% when Some with (value) %} enctype="{{ value }}"{% when None %}{% endmatch %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {{ body_html }}
+</form>

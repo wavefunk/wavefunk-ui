@@ -1,0 +1,8 @@
+<button class="{{ self.class_name() }}" type="button"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {{ avatar }}
+  <span class="wf-user-id">
+    <span class="wf-user-name">{{ name }}</span>
+    <span class="wf-user-email">{{ email }}</span>
+  </span>
+  <span class="wf-user-caret">v</span>
+</button>

@@ -1,0 +1,3 @@
+<div class="{{ self.class_name() }}"{% if value.is_some() %} style="--progress: {{ self.bounded_value() }}%"{% endif %}>
+  <div class="wf-progress-fill"></div>
+</div>

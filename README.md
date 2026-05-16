@@ -104,6 +104,8 @@ Component rendering uses Askama's `Result` type. Propagate render errors from re
 
 Feature flags are additive. The default feature set stays framework-neutral; framework adapters such as Axum are enabled with feature flags.
 
+Marketing page CSS is part of the embedded asset bundle. Stable repeated primitives such as marketing sections, feature grids, step grids, pricing plans, and testimonials are exposed as typed components. Full landing-page composition, hero copy, and app-specific page structure should stay in consumer templates so this crate does not freeze one marketing layout into the semver surface.
+
 ## Interaction Primitives
 
 The shared JavaScript in `wavefunk.js` is intentionally generic:

@@ -1,0 +1,16 @@
+<section class="wf-form-section">
+  <div class="wf-form-section-head">
+    <div class="wf-form-section-title">{{ title }}</div>
+    {%- match description -%}
+    {%- when Some with (text) -%}
+    <div class="wf-form-section-desc">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-form-section-body">{{ body_html }}</div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  {{ html }}
+  {%- when None -%}
+  {%- endmatch -%}
+</section>

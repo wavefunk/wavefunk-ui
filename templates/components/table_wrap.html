@@ -1,0 +1,18 @@
+<div class="wf-tablewrap">
+  {%- match filterbar_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-filterbar">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  {%- match bulk_count -%}
+  {%- when Some with (count) -%}
+  <div class="wf-bulkbar"><span class="wf-sel-count">{{ count }}</span>{% match bulk_actions_html %}{% when Some with (html) %}{{ html }}{% when None %}{% endmatch %}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-tablescroll">{{ table_html }}</div>
+  {%- match footer_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-tablefoot">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

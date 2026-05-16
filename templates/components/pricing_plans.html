@@ -1,0 +1,13 @@
+<div class="wf-plans">
+  {%- for plan in plans -%}
+  <div class="{{ plan.class_name() }}">
+    <span class="wf-plan-name">{{ plan.name }}</span>
+    <div class="wf-plan-price">{{ plan.price }}{% match plan.unit %}{% when Some with (unit) %}<span class="wf-plan-price-unit">{{ unit }}</span>{% when None %}{% endmatch %}</div>
+    {%- match plan.blurb -%}
+    {%- when Some with (text) -%}
+    <p class="wf-plan-blurb">{{ text }}</p>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  {%- endfor -%}
+</div>

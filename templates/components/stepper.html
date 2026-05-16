@@ -1,0 +1,10 @@
+<div class="wf-stepper">
+  {%- for step in steps -%}
+  {%- match step.href -%}
+  {%- when Some with (href) -%}
+  <a class="{{ step.class_name() }}" href="{{ href }}"{% if step.is_active() %} aria-current="step"{% endif %}><span class="wf-step-num">{{ loop.index }}</span>{{ step.label }}</a>
+  {%- when None -%}
+  <div class="{{ step.class_name() }}"{% if step.is_active() %} aria-current="step"{% endif %}><span class="wf-step-num">{{ loop.index }}</span>{{ step.label }}</div>
+  {%- endmatch -%}
+  {%- endfor -%}
+</div>

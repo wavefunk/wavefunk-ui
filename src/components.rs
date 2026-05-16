@@ -1,5 +1,5 @@
 use askama::Template;
-use std::fmt;
+use std::fmt::{self, Write as _};
 
 #[derive(Clone, Copy, Debug)]
 pub struct HtmlAttr<'a> {
@@ -336,6 +336,108 @@ impl<'a> Field<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for Field<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/form.html")]
+pub struct Form<'a> {
+    pub body_html: TrustedHtml<'a>,
+    pub action: Option<&'a str>,
+    pub method: &'a str,
+    pub enctype: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Form<'a> {
+    pub const fn new(body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            body_html,
+            action: None,
+            method: "post",
+            enctype: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_action(mut self, action: &'a str) -> Self {
+        self.action = Some(action);
+        self
+    }
+
+    pub const fn with_method(mut self, method: &'a str) -> Self {
+        self.method = method;
+        self
+    }
+
+    pub const fn with_enctype(mut self, enctype: &'a str) -> Self {
+        self.enctype = Some(enctype);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Form<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/form_section.html")]
+pub struct FormSection<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub description: Option<&'a str>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> FormSection<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            description: None,
+            actions_html: None,
+        }
+    }
+
+    pub const fn with_description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for FormSection<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/form_actions.html")]
+pub struct FormActions<'a> {
+    pub primary_html: TrustedHtml<'a>,
+    pub secondary_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> FormActions<'a> {
+    pub const fn new(primary_html: TrustedHtml<'a>) -> Self {
+        Self {
+            primary_html,
+            secondary_html: None,
+        }
+    }
+
+    pub const fn with_secondary(mut self, secondary_html: TrustedHtml<'a>) -> Self {
+        self.secondary_html = Some(secondary_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for FormActions<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
@@ -893,6 +995,78 @@ impl<'a> askama::filters::HtmlSafe for Range<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/dropzone.html")]
+pub struct Dropzone<'a> {
+    pub name: &'a str,
+    pub title: &'a str,
+    pub hint: Option<&'a str>,
+    pub accept: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
+    pub multiple: bool,
+    pub disabled: bool,
+    pub dragover: bool,
+}
+
+impl<'a> Dropzone<'a> {
+    pub const fn new(name: &'a str) -> Self {
+        Self {
+            name,
+            title: "Drop files or click",
+            hint: None,
+            accept: None,
+            attrs: &[],
+            multiple: false,
+            disabled: false,
+            dragover: false,
+        }
+    }
+
+    pub const fn with_title(mut self, title: &'a str) -> Self {
+        self.title = title;
+        self
+    }
+
+    pub const fn with_hint(mut self, hint: &'a str) -> Self {
+        self.hint = Some(hint);
+        self
+    }
+
+    pub const fn with_accept(mut self, accept: &'a str) -> Self {
+        self.accept = Some(accept);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub const fn multiple(mut self) -> Self {
+        self.multiple = true;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub const fn dragover(mut self) -> Self {
+        self.dragover = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let dragover = if self.dragover { " is-dragover" } else { "" };
+        let disabled = if self.disabled { " is-disabled" } else { "" };
+        format!("wf-dropzone{dragover}{disabled}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Dropzone<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/panel.html")]
 pub struct Panel<'a> {
     pub title: &'a str,
@@ -1109,6 +1283,88 @@ impl<'a> Avatar<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for Avatar<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/avatar_group.html")]
+pub struct AvatarGroup<'a> {
+    pub avatars: &'a [Avatar<'a>],
+}
+
+impl<'a> AvatarGroup<'a> {
+    pub const fn new(avatars: &'a [Avatar<'a>]) -> Self {
+        Self { avatars }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for AvatarGroup<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/user_button.html")]
+pub struct UserButton<'a> {
+    pub name: &'a str,
+    pub email: &'a str,
+    pub avatar: Avatar<'a>,
+    pub compact: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> UserButton<'a> {
+    pub const fn new(name: &'a str, email: &'a str, avatar: Avatar<'a>) -> Self {
+        Self {
+            name,
+            email,
+            avatar,
+            compact: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn compact(mut self) -> Self {
+        self.compact = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.compact {
+            "wf-user compact"
+        } else {
+            "wf-user"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for UserButton<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/wordmark.html")]
+pub struct Wordmark<'a> {
+    pub name: &'a str,
+    pub mark_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> Wordmark<'a> {
+    pub const fn new(name: &'a str) -> Self {
+        Self {
+            name,
+            mark_html: None,
+        }
+    }
+
+    pub const fn with_mark(mut self, mark_html: TrustedHtml<'a>) -> Self {
+        self.mark_html = Some(mark_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Wordmark<'a> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DeltaKind {
@@ -1373,6 +1629,139 @@ impl<'a> Pagination<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Pagination<'a> {}
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum StepState {
+    Upcoming,
+    Active,
+    Done,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct StepItem<'a> {
+    pub label: &'a str,
+    pub href: Option<&'a str>,
+    pub state: StepState,
+}
+
+impl<'a> StepItem<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self {
+            label,
+            href: None,
+            state: StepState::Upcoming,
+        }
+    }
+
+    pub const fn with_href(mut self, href: &'a str) -> Self {
+        self.href = Some(href);
+        self
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.state = StepState::Active;
+        self
+    }
+
+    pub const fn done(mut self) -> Self {
+        self.state = StepState::Done;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match self.state {
+            StepState::Upcoming => "wf-step",
+            StepState::Active => "wf-step is-active",
+            StepState::Done => "wf-step is-done",
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.state == StepState::Active
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/stepper.html")]
+pub struct Stepper<'a> {
+    pub steps: &'a [StepItem<'a>],
+}
+
+impl<'a> Stepper<'a> {
+    pub const fn new(steps: &'a [StepItem<'a>]) -> Self {
+        Self { steps }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Stepper<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AccordionItem<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub open: bool,
+}
+
+impl<'a> AccordionItem<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            open: false,
+        }
+    }
+
+    pub const fn open(mut self) -> Self {
+        self.open = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/accordion.html")]
+pub struct Accordion<'a> {
+    pub items: &'a [AccordionItem<'a>],
+}
+
+impl<'a> Accordion<'a> {
+    pub const fn new(items: &'a [AccordionItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Accordion<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct FaqItem<'a> {
+    pub question: &'a str,
+    pub answer_html: TrustedHtml<'a>,
+}
+
+impl<'a> FaqItem<'a> {
+    pub const fn new(question: &'a str, answer_html: TrustedHtml<'a>) -> Self {
+        Self {
+            question,
+            answer_html,
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/faq.html")]
+pub struct Faq<'a> {
+    pub items: &'a [FaqItem<'a>],
+}
+
+impl<'a> Faq<'a> {
+    pub const fn new(items: &'a [FaqItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Faq<'a> {}
+
 #[derive(Debug, Template)]
 #[non_exhaustive]
 #[template(path = "components/nav_section.html")]
@@ -1518,6 +1907,34 @@ impl<'a> EmptyState<'a> {
 impl<'a> askama::filters::HtmlSafe for EmptyState<'a> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SortDirection {
+    Ascending,
+    Descending,
+}
+
+impl SortDirection {
+    fn arrow(self) -> &'static str {
+        match self {
+            Self::Ascending => "^",
+            Self::Descending => "v",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TableColumnWidth {
+    Auto,
+    ExtraSmall,
+    Small,
+    Medium,
+    Large,
+    ExtraLarge,
+    Id,
+    Checkbox,
+    Action,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct TableHeader<'a> {
     pub label: &'a str,
     pub numeric: bool,
@@ -1582,11 +1999,17 @@ impl<'a> TableCell<'a> {
         }
     }
 
-    pub fn class_name(&self) -> String {
-        let numeric = if self.numeric { "num" } else { "" };
-        let strong = if self.strong { " strong" } else { "" };
-        let muted = if self.muted { " muted" } else { "" };
-        format!("{numeric}{strong}{muted}")
+    pub fn class_name(&self) -> &'static str {
+        match (self.numeric, self.strong, self.muted) {
+            (false, false, false) => "",
+            (true, false, false) => "num",
+            (false, true, false) => "strong",
+            (false, false, true) => "muted",
+            (true, true, false) => "num strong",
+            (true, false, true) => "num muted",
+            (false, true, true) => "strong muted",
+            (true, true, true) => "num strong muted",
+        }
     }
 }
 
@@ -1670,6 +2093,266 @@ impl<'a> Table<'a> {
 impl<'a> askama::filters::HtmlSafe for Table<'a> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct DataTableHeader<'a> {
+    pub label: &'a str,
+    pub numeric: bool,
+    pub sort_key: Option<&'a str>,
+    pub sort_direction: Option<SortDirection>,
+    pub width: TableColumnWidth,
+}
+
+impl<'a> DataTableHeader<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self {
+            label,
+            numeric: false,
+            sort_key: None,
+            sort_direction: None,
+            width: TableColumnWidth::Auto,
+        }
+    }
+
+    pub const fn numeric(label: &'a str) -> Self {
+        Self {
+            numeric: true,
+            ..Self::new(label)
+        }
+    }
+
+    pub const fn sortable(mut self, sort_key: &'a str, direction: SortDirection) -> Self {
+        self.sort_key = Some(sort_key);
+        self.sort_direction = Some(direction);
+        self
+    }
+
+    pub const fn with_width(mut self, width: TableColumnWidth) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub const fn action_column(mut self) -> Self {
+        self.width = TableColumnWidth::Action;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match (self.width, self.numeric) {
+            (TableColumnWidth::Auto, false) => "",
+            (TableColumnWidth::Auto, true) => "num",
+            (TableColumnWidth::ExtraSmall, false) => "wf-col-xs",
+            (TableColumnWidth::ExtraSmall, true) => "wf-col-xs num",
+            (TableColumnWidth::Small, false) => "wf-col-sm",
+            (TableColumnWidth::Small, true) => "wf-col-sm num",
+            (TableColumnWidth::Medium, false) => "wf-col-md",
+            (TableColumnWidth::Medium, true) => "wf-col-md num",
+            (TableColumnWidth::Large, false) => "wf-col-lg",
+            (TableColumnWidth::Large, true) => "wf-col-lg num",
+            (TableColumnWidth::ExtraLarge, false) => "wf-col-xl",
+            (TableColumnWidth::ExtraLarge, true) => "wf-col-xl num",
+            (TableColumnWidth::Id, false) => "wf-col-id",
+            (TableColumnWidth::Id, true) => "wf-col-id num",
+            (TableColumnWidth::Checkbox, false) => "wf-col-chk",
+            (TableColumnWidth::Checkbox, true) => "wf-col-chk num",
+            (TableColumnWidth::Action, false) => "wf-col-act",
+            (TableColumnWidth::Action, true) => "wf-col-act num",
+        }
+    }
+
+    pub fn sort_arrow(&self) -> &'static str {
+        self.sort_direction.map(SortDirection::arrow).unwrap_or("-")
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct DataTableCell<'a> {
+    pub text: &'a str,
+    pub html: Option<TrustedHtml<'a>>,
+    pub numeric: bool,
+    pub strong: bool,
+    pub muted: bool,
+}
+
+impl<'a> DataTableCell<'a> {
+    pub const fn new(text: &'a str) -> Self {
+        Self {
+            text,
+            html: None,
+            numeric: false,
+            strong: false,
+            muted: false,
+        }
+    }
+
+    pub const fn numeric(text: &'a str) -> Self {
+        Self {
+            numeric: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub const fn strong(text: &'a str) -> Self {
+        Self {
+            strong: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub const fn muted(text: &'a str) -> Self {
+        Self {
+            muted: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub const fn html(html: TrustedHtml<'a>) -> Self {
+        Self {
+            text: "",
+            html: Some(html),
+            numeric: false,
+            strong: false,
+            muted: false,
+        }
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match (self.numeric, self.strong, self.muted) {
+            (false, false, false) => "",
+            (true, false, false) => "num",
+            (false, true, false) => "strong",
+            (false, false, true) => "muted",
+            (true, true, false) => "num strong",
+            (true, false, true) => "num muted",
+            (false, true, true) => "strong muted",
+            (true, true, true) => "num strong muted",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct DataTableRow<'a> {
+    pub cells: &'a [DataTableCell<'a>],
+    pub selected: bool,
+}
+
+impl<'a> DataTableRow<'a> {
+    pub const fn new(cells: &'a [DataTableCell<'a>]) -> Self {
+        Self {
+            cells,
+            selected: false,
+        }
+    }
+
+    pub const fn selected(mut self) -> Self {
+        self.selected = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/data_table.html")]
+pub struct DataTable<'a> {
+    pub headers: &'a [DataTableHeader<'a>],
+    pub rows: &'a [DataTableRow<'a>],
+    pub flush: bool,
+    pub interactive: bool,
+    pub sticky: bool,
+    pub pin_last: bool,
+}
+
+impl<'a> DataTable<'a> {
+    pub const fn new(headers: &'a [DataTableHeader<'a>], rows: &'a [DataTableRow<'a>]) -> Self {
+        Self {
+            headers,
+            rows,
+            flush: false,
+            interactive: false,
+            sticky: false,
+            pin_last: false,
+        }
+    }
+
+    pub const fn flush(mut self) -> Self {
+        self.flush = true;
+        self
+    }
+
+    pub const fn interactive(mut self) -> Self {
+        self.interactive = true;
+        self
+    }
+
+    pub const fn sticky(mut self) -> Self {
+        self.sticky = true;
+        self
+    }
+
+    pub const fn pin_last(mut self) -> Self {
+        self.pin_last = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let flush = if self.flush { " flush" } else { "" };
+        let interactive = if self.interactive {
+            " is-interactive"
+        } else {
+            ""
+        };
+        let sticky = if self.sticky { " sticky" } else { "" };
+        let pin_last = if self.pin_last { " pin-last" } else { "" };
+        format!("wf-table{flush}{interactive}{sticky}{pin_last}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for DataTable<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/table_wrap.html")]
+pub struct TableWrap<'a> {
+    pub table_html: TrustedHtml<'a>,
+    pub filterbar_html: Option<TrustedHtml<'a>>,
+    pub bulk_count: Option<&'a str>,
+    pub bulk_actions_html: Option<TrustedHtml<'a>>,
+    pub footer_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> TableWrap<'a> {
+    pub const fn new(table_html: TrustedHtml<'a>) -> Self {
+        Self {
+            table_html,
+            filterbar_html: None,
+            bulk_count: None,
+            bulk_actions_html: None,
+            footer_html: None,
+        }
+    }
+
+    pub const fn with_filterbar(mut self, filterbar_html: TrustedHtml<'a>) -> Self {
+        self.filterbar_html = Some(filterbar_html);
+        self
+    }
+
+    pub const fn with_bulkbar(
+        mut self,
+        bulk_count: &'a str,
+        bulk_actions_html: TrustedHtml<'a>,
+    ) -> Self {
+        self.bulk_count = Some(bulk_count);
+        self.bulk_actions_html = Some(bulk_actions_html);
+        self
+    }
+
+    pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_html = Some(footer_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for TableWrap<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct DefinitionItem<'a> {
     pub term: &'a str,
     pub description: &'a str,
@@ -1708,6 +2391,246 @@ impl<'a> DefinitionList<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for DefinitionList<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct RankRow<'a> {
+    pub label: &'a str,
+    pub value: &'a str,
+    pub percent: u8,
+}
+
+impl<'a> RankRow<'a> {
+    pub const fn new(label: &'a str, value: &'a str, percent: u8) -> Self {
+        Self {
+            label,
+            value,
+            percent,
+        }
+    }
+
+    pub fn bounded_percent(&self) -> u8 {
+        self.percent.min(100)
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/rank_list.html")]
+pub struct RankList<'a> {
+    pub rows: &'a [RankRow<'a>],
+}
+
+impl<'a> RankList<'a> {
+    pub const fn new(rows: &'a [RankRow<'a>]) -> Self {
+        Self { rows }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for RankList<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct FeedRow<'a> {
+    pub time: &'a str,
+    pub kicker: &'a str,
+    pub text: &'a str,
+}
+
+impl<'a> FeedRow<'a> {
+    pub const fn new(time: &'a str, kicker: &'a str, text: &'a str) -> Self {
+        Self { time, kicker, text }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/feed.html")]
+pub struct Feed<'a> {
+    pub rows: &'a [FeedRow<'a>],
+}
+
+impl<'a> Feed<'a> {
+    pub const fn new(rows: &'a [FeedRow<'a>]) -> Self {
+        Self { rows }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Feed<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TimelineItem<'a> {
+    pub time: &'a str,
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub active: bool,
+}
+
+impl<'a> TimelineItem<'a> {
+    pub const fn new(time: &'a str, title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            time,
+            title,
+            body_html,
+            active: false,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.active {
+            "wf-timeline-item is-active"
+        } else {
+            "wf-timeline-item"
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/timeline.html")]
+pub struct Timeline<'a> {
+    pub items: &'a [TimelineItem<'a>],
+}
+
+impl<'a> Timeline<'a> {
+    pub const fn new(items: &'a [TimelineItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Timeline<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TreeItemKind {
+    Folder,
+    File,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TreeItem<'a> {
+    pub kind: TreeItemKind,
+    pub label: &'a str,
+    pub active: bool,
+    pub collapsed: bool,
+    pub children_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> TreeItem<'a> {
+    pub const fn folder(label: &'a str) -> Self {
+        Self {
+            kind: TreeItemKind::Folder,
+            label,
+            active: false,
+            collapsed: false,
+            children_html: None,
+        }
+    }
+
+    pub const fn file(label: &'a str) -> Self {
+        Self {
+            kind: TreeItemKind::File,
+            label,
+            active: false,
+            collapsed: false,
+            children_html: None,
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub const fn collapsed(mut self) -> Self {
+        self.collapsed = true;
+        self
+    }
+
+    pub const fn with_children(mut self, children_html: TrustedHtml<'a>) -> Self {
+        self.children_html = Some(children_html);
+        self
+    }
+
+    pub fn item_class(&self) -> &'static str {
+        if self.collapsed { "is-collapsed" } else { "" }
+    }
+
+    pub fn label_class(&self) -> &'static str {
+        match (self.kind, self.active) {
+            (TreeItemKind::Folder, _) => "tree-folder",
+            (TreeItemKind::File, true) => "tree-file is-active",
+            (TreeItemKind::File, false) => "tree-file",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/tree_view.html")]
+pub struct TreeView<'a> {
+    pub items: &'a [TreeItem<'a>],
+    pub nested: bool,
+}
+
+impl<'a> TreeView<'a> {
+    pub const fn new(items: &'a [TreeItem<'a>]) -> Self {
+        Self {
+            items,
+            nested: false,
+        }
+    }
+
+    pub const fn nested(mut self) -> Self {
+        self.nested = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.nested { "" } else { "wf-tree" }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for TreeView<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/framed.html")]
+pub struct Framed<'a> {
+    pub content_html: TrustedHtml<'a>,
+    pub dense: bool,
+    pub dashed: bool,
+}
+
+impl<'a> Framed<'a> {
+    pub const fn new(content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            content_html,
+            dense: false,
+            dashed: false,
+        }
+    }
+
+    pub const fn dense(mut self) -> Self {
+        self.dense = true;
+        self
+    }
+
+    pub const fn dashed(mut self) -> Self {
+        self.dashed = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let dense = if self.dense { " dense" } else { "" };
+        let dashed = if self.dashed { " dashed" } else { "" };
+        format!("wf-framed{dense}{dashed}")
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Framed<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
@@ -2099,6 +3022,123 @@ impl<'a> Drawer<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Drawer<'a> {}
 
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/progress.html")]
+pub struct Progress {
+    pub value: Option<u8>,
+}
+
+impl Progress {
+    pub const fn new(value: u8) -> Self {
+        Self { value: Some(value) }
+    }
+
+    pub const fn indeterminate() -> Self {
+        Self { value: None }
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.value.is_some() {
+            "wf-progress"
+        } else {
+            "wf-progress indeterminate"
+        }
+    }
+
+    pub fn bounded_value(&self) -> u8 {
+        self.value.unwrap_or(0).min(100)
+    }
+}
+
+impl askama::filters::HtmlSafe for Progress {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MeterColor {
+    Accent,
+    Ok,
+    Warn,
+    Error,
+    Info,
+}
+
+impl MeterColor {
+    fn css_var(self) -> &'static str {
+        match self {
+            Self::Accent => "var(--accent)",
+            Self::Ok => "var(--ok)",
+            Self::Warn => "var(--warn)",
+            Self::Error => "var(--err)",
+            Self::Info => "var(--info)",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/meter.html")]
+pub struct Meter {
+    pub value: u8,
+    pub width_px: Option<u16>,
+    pub height_px: Option<u16>,
+    pub color: Option<MeterColor>,
+}
+
+impl Meter {
+    pub const fn new(value: u8) -> Self {
+        Self {
+            value,
+            width_px: None,
+            height_px: None,
+            color: None,
+        }
+    }
+
+    pub const fn with_size_px(mut self, width_px: u16, height_px: u16) -> Self {
+        self.width_px = Some(width_px);
+        self.height_px = Some(height_px);
+        self
+    }
+
+    pub const fn with_color(mut self, color: MeterColor) -> Self {
+        self.color = Some(color);
+        self
+    }
+
+    pub fn style(&self) -> String {
+        let mut style = String::with_capacity(72);
+        let _ = write!(&mut style, "--meter: {}%", self.value.min(100));
+        if let Some(width) = self.width_px {
+            let _ = write!(&mut style, "; --meter-w: {width}px");
+        }
+        if let Some(height) = self.height_px {
+            let _ = write!(&mut style, "; --meter-h: {height}px");
+        }
+        if let Some(color) = self.color {
+            style.push_str("; --meter-c: ");
+            style.push_str(color.css_var());
+        }
+        style
+    }
+}
+
+impl askama::filters::HtmlSafe for Meter {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/kbd.html")]
+pub struct Kbd<'a> {
+    pub label: &'a str,
+}
+
+impl<'a> Kbd<'a> {
+    pub const fn new(label: &'a str) -> Self {
+        Self { label }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Kbd<'a> {}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SkeletonKind {
     Line,
@@ -2235,6 +3275,173 @@ impl<'a> Default for Minibuffer<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for Minibuffer<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct FeatureItem<'a> {
+    pub title: &'a str,
+    pub body: &'a str,
+}
+
+impl<'a> FeatureItem<'a> {
+    pub const fn new(title: &'a str, body: &'a str) -> Self {
+        Self { title, body }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/feature_grid.html")]
+pub struct FeatureGrid<'a> {
+    pub items: &'a [FeatureItem<'a>],
+}
+
+impl<'a> FeatureGrid<'a> {
+    pub const fn new(items: &'a [FeatureItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for FeatureGrid<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MarketingStep<'a> {
+    pub title: &'a str,
+    pub body: &'a str,
+}
+
+impl<'a> MarketingStep<'a> {
+    pub const fn new(title: &'a str, body: &'a str) -> Self {
+        Self { title, body }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/marketing_step_grid.html")]
+pub struct MarketingStepGrid<'a> {
+    pub steps: &'a [MarketingStep<'a>],
+}
+
+impl<'a> MarketingStepGrid<'a> {
+    pub const fn new(steps: &'a [MarketingStep<'a>]) -> Self {
+        Self { steps }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for MarketingStepGrid<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PricingPlan<'a> {
+    pub name: &'a str,
+    pub price: &'a str,
+    pub unit: Option<&'a str>,
+    pub blurb: Option<&'a str>,
+    pub featured: bool,
+}
+
+impl<'a> PricingPlan<'a> {
+    pub const fn new(name: &'a str, price: &'a str) -> Self {
+        Self {
+            name,
+            price,
+            unit: None,
+            blurb: None,
+            featured: false,
+        }
+    }
+
+    pub const fn with_unit(mut self, unit: &'a str) -> Self {
+        self.unit = Some(unit);
+        self
+    }
+
+    pub const fn with_blurb(mut self, blurb: &'a str) -> Self {
+        self.blurb = Some(blurb);
+        self
+    }
+
+    pub const fn featured(mut self) -> Self {
+        self.featured = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.featured {
+            "wf-plan is-featured"
+        } else {
+            "wf-plan"
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/pricing_plans.html")]
+pub struct PricingPlans<'a> {
+    pub plans: &'a [PricingPlan<'a>],
+}
+
+impl<'a> PricingPlans<'a> {
+    pub const fn new(plans: &'a [PricingPlan<'a>]) -> Self {
+        Self { plans }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for PricingPlans<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/testimonial.html")]
+pub struct Testimonial<'a> {
+    pub quote_html: TrustedHtml<'a>,
+    pub name: &'a str,
+    pub role: &'a str,
+}
+
+impl<'a> Testimonial<'a> {
+    pub const fn new(quote_html: TrustedHtml<'a>, name: &'a str, role: &'a str) -> Self {
+        Self {
+            quote_html,
+            name,
+            role,
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Testimonial<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/marketing_section.html")]
+pub struct MarketingSection<'a> {
+    pub title: &'a str,
+    pub content_html: TrustedHtml<'a>,
+    pub kicker: Option<&'a str>,
+    pub subtitle: Option<&'a str>,
+}
+
+impl<'a> MarketingSection<'a> {
+    pub const fn new(title: &'a str, content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            content_html,
+            kicker: None,
+            subtitle: None,
+        }
+    }
+
+    pub const fn with_kicker(mut self, kicker: &'a str) -> Self {
+        self.kicker = Some(kicker);
+        self
+    }
+
+    pub const fn with_subtitle(mut self, subtitle: &'a str) -> Self {
+        self.subtitle = Some(subtitle);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for MarketingSection<'a> {}
 
 #[cfg(test)]
 mod tests {
@@ -2556,5 +3763,281 @@ mod tests {
         assert!(minibuffer.contains(r#"class="wf-minibuffer""#));
         assert!(minibuffer.contains("data-wf-echo"));
         assert!(!minibuffer.contains("Queued <job>"));
+    }
+
+    #[test]
+    fn form_composition_and_dropzone_components_render_expected_markup() {
+        let input_html = Input::email("email")
+            .with_placeholder("you@example.test")
+            .render()
+            .unwrap();
+        let field_html = Field::new("Email", TrustedHtml::new(&input_html))
+            .with_hint("Use <work> address")
+            .render()
+            .unwrap();
+        let actions_html = FormActions::new(TrustedHtml::new(
+            r#"<button class="wf-btn primary">Save</button>"#,
+        ))
+        .with_secondary(TrustedHtml::new(
+            r#"<button class="wf-btn">Cancel</button>"#,
+        ))
+        .render()
+        .unwrap();
+        let section_html = FormSection::new("Profile <setup>", TrustedHtml::new(&field_html))
+            .with_description("Shown to teammates <public>")
+            .render()
+            .unwrap();
+        let attrs = [HtmlAttr::hx_post("/profile")];
+        let form_html = Form::new(TrustedHtml::new(&section_html))
+            .with_action("/profile/save?next=<home>")
+            .with_method("post")
+            .with_attrs(&attrs)
+            .render()
+            .unwrap();
+        let dropzone_attrs = [HtmlAttr::new("data-intent", "avatar <upload>")];
+        let dropzone_html = Dropzone::new("avatar")
+            .with_title("Drop avatar <image>")
+            .with_hint("PNG or JPG <2MB>")
+            .with_accept("image/png,image/jpeg")
+            .with_attrs(&dropzone_attrs)
+            .multiple()
+            .disabled()
+            .dragover()
+            .render()
+            .unwrap();
+
+        assert!(actions_html.contains(r#"class="wf-form-actions""#));
+        assert!(section_html.contains(r#"class="wf-form-section""#));
+        assert!(!section_html.contains("Profile <setup>"));
+        assert!(!section_html.contains("Shown to teammates <public>"));
+        assert!(form_html.contains(r#"<form class="wf-form""#));
+        assert!(form_html.contains(r#"method="post""#));
+        assert!(form_html.contains(r#"hx-post="/profile""#));
+        assert!(!form_html.contains(r#"action="/profile/save?next=<home>""#));
+        assert!(dropzone_html.contains(r#"class="wf-dropzone is-dragover is-disabled""#));
+        assert!(dropzone_html.contains(r#"type="file""#));
+        assert!(dropzone_html.contains(r#"multiple"#));
+        assert!(dropzone_html.contains(r#"disabled"#));
+        assert!(dropzone_html.contains(r#"accept="image/png,image/jpeg""#));
+        assert!(dropzone_html.contains(r#"data-intent="avatar "#));
+        assert!(!dropzone_html.contains(r#"data-intent="avatar <upload>""#));
+        assert!(!dropzone_html.contains("Drop avatar <image>"));
+        assert!(!dropzone_html.contains("PNG or JPG <2MB>"));
+    }
+
+    #[test]
+    fn table_workflow_components_support_sorting_actions_and_chrome() {
+        let _source_compatible_header = TableHeader {
+            label: "Legacy",
+            numeric: false,
+        };
+        let _source_compatible_cell = TableCell {
+            text: "Legacy",
+            numeric: false,
+            strong: false,
+            muted: false,
+        };
+        let headers = [
+            DataTableHeader::new("Name").sortable("name", SortDirection::Ascending),
+            DataTableHeader::numeric("Runs").with_width(TableColumnWidth::Small),
+            DataTableHeader::new("Actions").action_column(),
+        ];
+        let actions = IconButton::new(TrustedHtml::new("&times;"), "Stop")
+            .with_variant(ButtonVariant::Danger)
+            .render()
+            .unwrap();
+        let row_cells = [
+            DataTableCell::strong("Build <main>"),
+            DataTableCell::numeric("12"),
+            DataTableCell::html(TrustedHtml::new(&actions)),
+        ];
+        let rows = [DataTableRow::new(&row_cells).selected()];
+        let filter_html = Input::new("q")
+            .with_size(ControlSize::Small)
+            .with_placeholder("Search")
+            .render()
+            .unwrap();
+        let bulk_html = Button::new("Delete").render().unwrap();
+        let table_html = DataTable::new(&headers, &rows)
+            .interactive()
+            .sticky()
+            .pin_last()
+            .render()
+            .unwrap();
+        let wrap_html = TableWrap::new(TrustedHtml::new(&table_html))
+            .with_filterbar(TrustedHtml::new(&filter_html))
+            .with_bulkbar("1 selected", TrustedHtml::new(&bulk_html))
+            .with_footer(TrustedHtml::new("Showing 1-1 of 1"))
+            .render()
+            .unwrap();
+
+        assert!(table_html.contains(r#"class="wf-sort-h is-active""#));
+        assert!(table_html.contains(r#"data-sort-key="name""#));
+        assert!(table_html.contains(r#"class="wf-sort-arrow">^"#));
+        assert!(table_html.contains(r#"class="wf-col-sm num""#));
+        assert!(table_html.contains(r#"class="wf-col-act""#));
+        assert!(table_html.contains("&times;"));
+        assert!(!table_html.contains("Build <main>"));
+        assert!(wrap_html.contains(r#"class="wf-tablewrap""#));
+        assert!(wrap_html.contains(r#"class="wf-filterbar""#));
+        assert!(wrap_html.contains(r#"class="wf-bulkbar""#));
+        assert!(wrap_html.contains(r#"class="wf-tablefoot""#));
+    }
+
+    #[test]
+    fn progress_stepper_and_disclosure_components_render_expected_markup() {
+        let progress = Progress::new(60).render().unwrap();
+        let indeterminate = Progress::indeterminate().render().unwrap();
+        let meter = Meter::new(75)
+            .with_size_px(96, 6)
+            .with_color(MeterColor::Ok)
+            .render()
+            .unwrap();
+        let kbd = Kbd::new("Ctrl <K>").render().unwrap();
+        let steps = [
+            StepItem::new("Account").done(),
+            StepItem::new("Profile <public>")
+                .active()
+                .with_href("/profile"),
+            StepItem::new("Invite"),
+        ];
+        let stepper = Stepper::new(&steps).render().unwrap();
+        let accordion_items = [
+            AccordionItem::new("What is <UI>?", TrustedHtml::new("<p>Typed</p>")).open(),
+            AccordionItem::new("Can it htmx?", TrustedHtml::new("<p>Yes</p>")),
+        ];
+        let accordion = Accordion::new(&accordion_items).render().unwrap();
+        let faq_items = [FaqItem::new(
+            "Why typed?",
+            TrustedHtml::new("<p>To preserve semver.</p>"),
+        )];
+        let faq = Faq::new(&faq_items).render().unwrap();
+
+        assert!(progress.contains(r#"class="wf-progress""#));
+        assert!(progress.contains(r#"style="--progress: 60%""#));
+        assert!(indeterminate.contains(r#"class="wf-progress indeterminate""#));
+        assert!(meter.contains(
+            r#"style="--meter: 75%; --meter-w: 96px; --meter-h: 6px; --meter-c: var(--ok)""#
+        ));
+        assert!(kbd.contains(r#"class="wf-kbd""#));
+        assert!(!kbd.contains("Ctrl <K>"));
+        assert!(stepper.contains(r#"class="wf-step is-done""#));
+        assert!(stepper.contains(r#"aria-current="step""#));
+        assert!(!stepper.contains("Profile <public>"));
+        assert!(accordion.contains(r#"class="wf-accordion""#));
+        assert!(accordion.contains(r#"<details class="wf-accordion-item" open>"#));
+        assert!(!accordion.contains("What is <UI>?"));
+        assert!(faq.contains(r#"class="wf-faq""#));
+        assert!(faq.contains("<p>To preserve semver.</p>"));
+    }
+
+    #[test]
+    fn identity_brand_and_operational_components_render_expected_markup() {
+        let avatars = [
+            Avatar::new("SN").with_image("/avatar.png").accent(),
+            Avatar::new("WF").with_size(AvatarSize::Small),
+        ];
+        let avatar_group = AvatarGroup::new(&avatars).render().unwrap();
+        let full_user = UserButton::new("Wave Funk", "team@example.test", Avatar::new("WF"))
+            .render()
+            .unwrap();
+        let user = UserButton::new(
+            "Sandeep <Nambiar>",
+            "sandeep@example.test",
+            Avatar::new("SN"),
+        )
+        .compact()
+        .render()
+        .unwrap();
+        let wordmark = Wordmark::new("Wave <Funk>")
+            .with_mark(TrustedHtml::new(r#"<svg class="wf-mark"></svg>"#))
+            .render()
+            .unwrap();
+        let ranks = [RankRow::new("Builds <main>", "42", 72)];
+        let rank_list = RankList::new(&ranks).render().unwrap();
+        let feed_rows = [FeedRow::new("09:41", "Deploy <prod>", "Released <v1>")];
+        let feed = Feed::new(&feed_rows).render().unwrap();
+        let timeline_items =
+            [
+                TimelineItem::new("09:42", "Queued <job>", TrustedHtml::new("<p>Pending</p>"))
+                    .active(),
+            ];
+        let timeline = Timeline::new(&timeline_items).render().unwrap();
+        let tree_children = [TreeItem::file("components.rs").active()];
+        let tree_child_html = TreeView::new(&tree_children).nested().render().unwrap();
+        let tree_items = [TreeItem::folder("src <root>")
+            .collapsed()
+            .with_children(TrustedHtml::new(&tree_child_html))];
+        let tree = TreeView::new(&tree_items).render().unwrap();
+        let framed = Framed::new(TrustedHtml::new("<code>cargo test</code>"))
+            .dense()
+            .dashed()
+            .render()
+            .unwrap();
+
+        assert!(avatar_group.contains(r#"class="wf-avatar-group""#));
+        assert!(avatar_group.contains(r#"<img src="/avatar.png" alt="SN">"#));
+        assert!(full_user.contains(r#"class="wf-user""#));
+        assert!(!full_user.contains(r#"class="wf-user compact""#));
+        assert!(user.contains(r#"class="wf-user compact""#));
+        assert!(!user.contains("Sandeep <Nambiar>"));
+        assert!(wordmark.contains(r#"class="wf-wordmark""#));
+        assert!(wordmark.contains(r#"<svg class="wf-mark"></svg>"#));
+        assert!(!wordmark.contains("Wave <Funk>"));
+        assert!(rank_list.contains(r#"class="wf-rank""#));
+        assert!(rank_list.contains(r#"style="width: 72%""#));
+        assert!(!rank_list.contains("Builds <main>"));
+        assert!(feed.contains(r#"class="wf-feed""#));
+        assert!(!feed.contains("Deploy <prod>"));
+        assert!(!feed.contains("Released <v1>"));
+        assert!(timeline.contains(r#"class="wf-timeline-item is-active""#));
+        assert!(!timeline.contains("Queued <job>"));
+        assert!(tree.contains(r#"class="wf-tree""#));
+        assert!(tree.contains(r#"class="is-collapsed""#));
+        assert!(!tree.contains("src <root>"));
+        assert!(framed.contains(r#"class="wf-framed dense dashed""#));
+    }
+
+    #[test]
+    fn marketing_primitives_render_stable_typed_sections() {
+        let features = [
+            FeatureItem::new("Typed <APIs>", "No struct literal churn."),
+            FeatureItem::new("Embedded assets", "Self-contained binaries."),
+        ];
+        let feature_grid = FeatureGrid::new(&features).render().unwrap();
+        let steps = [
+            MarketingStep::new("Install", "Add the crate."),
+            MarketingStep::new("Render", "Use Askama templates."),
+        ];
+        let step_grid = MarketingStepGrid::new(&steps).render().unwrap();
+        let plans = [
+            PricingPlan::new("Starter", "$9")
+                .with_blurb("For small teams.")
+                .featured(),
+            PricingPlan::new("Scale", "$29"),
+        ];
+        let pricing = PricingPlans::new(&plans).render().unwrap();
+        let testimonial = Testimonial::new(
+            TrustedHtml::new("<p>Fast to wire.</p>"),
+            "Operator <one>",
+            "Founder",
+        )
+        .render()
+        .unwrap();
+        let section = MarketingSection::new("Component <system>", TrustedHtml::new(&feature_grid))
+            .with_kicker("Wave Funk")
+            .with_subtitle("Typed primitives for Rust apps.")
+            .render()
+            .unwrap();
+
+        assert!(feature_grid.contains(r#"class="mk-features""#));
+        assert!(!feature_grid.contains("Typed <APIs>"));
+        assert!(step_grid.contains(r#"class="mk-steps""#));
+        assert!(pricing.contains(r#"class="wf-plans""#));
+        assert!(pricing.contains(r#"class="wf-plan is-featured""#));
+        assert!(testimonial.contains(r#"class="wf-testimonial""#));
+        assert!(!testimonial.contains("Operator <one>"));
+        assert!(section.contains(r#"class="mk-sect""#));
+        assert!(!section.contains("Component <system>"));
     }
 }

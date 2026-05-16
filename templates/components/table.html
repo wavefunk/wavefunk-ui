@@ -2,7 +2,7 @@
   <thead>
     <tr>
       {%- for header in headers -%}
-      <th class="{{ header.class_name() }}">{{ header.label }}</th>
+      <th{% if !header.class_name().is_empty() %} class="{{ header.class_name() }}"{% endif %}>{{ header.label }}</th>
       {%- endfor -%}
     </tr>
   </thead>
@@ -10,7 +10,7 @@
     {%- for row in rows -%}
     <tr{% if row.selected %} class="is-selected" aria-selected="true"{% endif %}>
       {%- for cell in row.cells -%}
-      <td class="{{ cell.class_name() }}">{{ cell.text }}</td>
+      <td{% if !cell.class_name().is_empty() %} class="{{ cell.class_name() }}"{% endif %}>{{ cell.text }}</td>
       {%- endfor -%}
     </tr>
     {%- endfor -%}

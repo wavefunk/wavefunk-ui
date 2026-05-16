@@ -1,0 +1,8 @@
+<div class="wf-accordion">
+  {%- for item in items -%}
+  <details class="wf-accordion-item"{% if item.open %} open{% endif %}>
+    <summary class="wf-accordion-trigger">{{ item.title }}</summary>
+    <div class="wf-accordion-body">{{ item.body_html }}</div>
+  </details>
+  {%- endfor -%}
+</div>

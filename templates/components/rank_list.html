@@ -1,0 +1,10 @@
+<div class="wf-rank">
+  {%- for row in rows -%}
+  <div class="wf-rank-row">
+    <div class="wf-rank-idx">{{ loop.index }}</div>
+    <div class="wf-rank-label">{{ row.label }}</div>
+    <div class="wf-rank-bar"><span style="width: {{ row.bounded_percent() }}%"></span></div>
+    <div class="wf-rank-val">{{ row.value }}</div>
+  </div>
+  {%- endfor -%}
+</div>

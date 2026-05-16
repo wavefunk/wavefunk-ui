@@ -1,0 +1,9 @@
+<div class="mk-features">
+  {%- for item in items -%}
+  <div class="mk-feat">
+    <div class="mk-feat-num">{{ loop.index }}</div>
+    <h3 class="mk-feat-t">{{ item.title }}</h3>
+    <p class="mk-feat-b">{{ item.body }}</p>
+  </div>
+  {%- endfor -%}
+</div>

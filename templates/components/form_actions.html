@@ -1,0 +1,8 @@
+<div class="wf-form-actions">
+  {%- match secondary_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-form-actions-secondary">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-form-actions-primary">{{ primary_html }}</div>
+</div>

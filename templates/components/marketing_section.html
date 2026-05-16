@@ -1,0 +1,18 @@
+<section class="mk-sect">
+  <div class="mk-sect-head">
+    <div>
+      {%- match kicker -%}
+      {%- when Some with (text) -%}
+      <div class="mk-sect-kicker">{{ text }}</div>
+      {%- when None -%}
+      {%- endmatch -%}
+      <h2 class="mk-sect-title">{{ title }}</h2>
+    </div>
+    {%- match subtitle -%}
+    {%- when Some with (text) -%}
+    <p class="mk-sect-sub">{{ text }}</p>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  {{ content_html }}
+</section>

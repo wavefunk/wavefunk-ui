@@ -1,0 +1,8 @@
+<div class="wf-wordmark">
+  {%- match mark_html -%}
+  {%- when Some with (html) -%}
+  {{ html }}
+  {%- when None -%}
+  {%- endmatch -%}
+  <span class="wf-wordmark-name">{{ name }}</span>
+</div>
