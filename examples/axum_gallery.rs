@@ -15,10 +15,10 @@ use wavefunk_ui::components::{
     EmptyState, Faq, FaqItem, FeatureGrid, FeatureItem, Feed, FeedRow, FeedbackKind, Field,
     FieldState, FilterBar, Form, FormActions, FormSection, Framed, Grid, HtmlAttr, InlineFormRow,
     Input, Kbd, MarkdownTextarea, MarketingSection, MarketingStep, MarketingStepGrid, Menu,
-    MenuItem, Meter, MeterColor, Minibuffer, Modal, NavItem, NavSection, ObjectFieldset,
-    PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans, Progress,
-    RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost, RowSelect,
-    SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Skeleton,
+    MenuItem, Meter, MeterColor, Minibuffer, MinibufferEcho, Modal, NavItem, NavSection,
+    ObjectFieldset, PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans,
+    Progress, RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost,
+    RowSelect, SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Skeleton,
     SortDirection, Spinner, Split, Stat, StatRow, Statusbar, StepItem, Stepper, TabItem, Table,
     TableCell, TableColumnWidth, TableFooter, TableHeader, TableRow, TableWrap, Tabs, Testimonial,
     Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml, UserButton,
@@ -542,8 +542,14 @@ fn loading_result_fragment() -> String {
         ),
         "loading echo",
     );
+    let minibuffer_echo = render(
+        MinibufferEcho::info("GET /fragments/loading refreshed the usage panel."),
+        "minibuffer echo source",
+    );
 
-    format!(r#"<div id="loading-demo" class="wf-g wf-gap-3">{stat_row}{progress}{echo}</div>"#)
+    format!(
+        r#"{minibuffer_echo}<div id="loading-demo" class="wf-g wf-gap-3">{stat_row}{progress}{echo}</div>"#
+    )
 }
 
 fn data_section() -> String {

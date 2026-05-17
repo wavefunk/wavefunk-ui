@@ -4032,6 +4032,42 @@ impl<'a> Default for Minibuffer<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Minibuffer<'a> {}
 
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/minibuffer_echo.html")]
+pub struct MinibufferEcho<'a> {
+    pub kind: FeedbackKind,
+    pub message: &'a str,
+}
+
+impl<'a> MinibufferEcho<'a> {
+    pub const fn new(kind: FeedbackKind, message: &'a str) -> Self {
+        Self { kind, message }
+    }
+
+    pub const fn info(message: &'a str) -> Self {
+        Self::new(FeedbackKind::Info, message)
+    }
+
+    pub const fn ok(message: &'a str) -> Self {
+        Self::new(FeedbackKind::Ok, message)
+    }
+
+    pub const fn warn(message: &'a str) -> Self {
+        Self::new(FeedbackKind::Warn, message)
+    }
+
+    pub const fn error(message: &'a str) -> Self {
+        Self::new(FeedbackKind::Error, message)
+    }
+
+    pub fn kind_class(&self) -> &'static str {
+        self.kind.class()
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for MinibufferEcho<'a> {}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct FeatureItem<'a> {
     pub title: &'a str,
@@ -4530,6 +4566,7 @@ mod tests {
             .with_time("09:41")
             .render()
             .unwrap();
+        let minibuffer_echo = MinibufferEcho::warn("Queued <job>").render().unwrap();
 
         assert!(callout.contains(r#"class="wf-callout warn""#));
         assert!(toast.contains(r#"class="wf-toast ok""#));
@@ -4550,6 +4587,10 @@ mod tests {
         assert!(minibuffer.contains(r#"class="wf-minibuffer""#));
         assert!(minibuffer.contains("data-wf-echo"));
         assert!(!minibuffer.contains("Queued <job>"));
+        assert!(minibuffer_echo.contains(r#"hidden"#));
+        assert!(minibuffer_echo.contains(r#"data-wf-echo-kind="warn""#));
+        assert!(minibuffer_echo.contains(r#"data-wf-echo-message="Queued "#));
+        assert!(!minibuffer_echo.contains("Queued <job>"));
     }
 
     #[test]

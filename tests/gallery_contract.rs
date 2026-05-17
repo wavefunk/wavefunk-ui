@@ -88,6 +88,7 @@ fn gallery_example_exposes_migration_readiness_components() {
 
     for primitive in [
         "SettingsSection::new(",
+        "MinibufferEcho::info(",
         "InlineFormRow::new(",
         "CopyableValue::new(",
         "CredentialStatusList::new(",

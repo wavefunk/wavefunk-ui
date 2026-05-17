@@ -114,7 +114,7 @@ The shared JavaScript in `wavefunk.js` is intentionally generic:
 
 - Popovers open when a trigger inside `.wf-pop-anchor` has `data-popover-toggle`; the matching `.wf-popover` closes when the user clicks outside it.
 - Toasts are emitted with an htmx `HX-Trigger` payload for `wfToast`.
-- Echo/minibuffer messages are emitted with `wfEcho` and update elements marked with `data-wf-echo`.
+- Echo/minibuffer messages are emitted with `wfEcho` and update elements marked with `data-wf-echo`. Use `Minibuffer` for the visible echo target and `MinibufferEcho::info("...")` in swapped fragments when markup should emit an echo message without hand-written data attributes.
 
 Use the htmx helpers to build response headers:
 
