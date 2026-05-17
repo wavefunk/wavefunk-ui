@@ -1,0 +1,18 @@
+<section class="wf-repeatable-array">
+  <div class="wf-repeatable-head">
+    <div>
+      <div class="wf-repeatable-title">{{ label }}</div>
+      {%- match description -%}
+      {%- when Some with (text) -%}
+      <div class="wf-repeatable-description">{{ text }}</div>
+      {%- when None -%}
+      {%- endmatch -%}
+    </div>
+    {%- match action_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-repeatable-items">{{ items_html }}</div>
+</section>

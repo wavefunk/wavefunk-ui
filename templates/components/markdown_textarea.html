@@ -1,0 +1,1 @@
+<textarea class="wf-textarea wf-markdown-textarea" name="{{ name }}" rows="{{ rows }}" data-wf-markdown{% match placeholder %}{% when Some with (text) %} placeholder="{{ text }}"{% when None %}{% endmatch %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{% match value %}{% when Some with (text) %}{{ text }}{% when None %}{% endmatch %}</textarea>

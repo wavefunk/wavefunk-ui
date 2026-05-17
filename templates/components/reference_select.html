@@ -1,0 +1,9 @@
+<div class="wf-reference-select">
+  <div class="wf-reference-label">{{ label }}</div>
+  {{ select_html }}
+  {%- match hint -%}
+  {%- when Some with (text) -%}
+  <div class="wf-reference-hint">{{ text }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

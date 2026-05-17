@@ -1,0 +1,8 @@
+<div class="wf-filterbar"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <div class="wf-filterbar-controls">{{ controls_html }}</div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-filterbar-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

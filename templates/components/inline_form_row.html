@@ -1,0 +1,16 @@
+<div class="wf-inline-form-row">
+  <div class="wf-inline-form-copy">
+    <div class="wf-inline-form-label">{{ label }}</div>
+    {%- match hint -%}
+    {%- when Some with (text) -%}
+    <div class="wf-inline-form-hint">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-inline-form-control">{{ control_html }}</div>
+  {%- match action_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-inline-form-action">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

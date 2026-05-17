@@ -4,9 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
+  {%- match head_html -%}
+  {%- when Some with (html) -%}
+  {{ html }}
+  {%- when None -%}
+  {%- endmatch -%}
   {{ self.stylesheet_link()|safe }}
   {{ self.htmx_script_link()|safe }}
+  {%- if include_htmx_sse %}
+  {{ self.htmx_sse_script_link()|safe }}
+  {%- endif %}
   {{ self.script_link()|safe }}
+  {%- match scripts_html -%}
+  {%- when Some with (html) -%}
+  {{ html }}
+  {%- when None -%}
+  {%- endmatch -%}
 </head>
 <body class="wf-app {{ density_class }}" hx-boost="true">
   <div class="wf-shell">
@@ -25,13 +38,23 @@
     </aside>
 
     <div class="wf-main">
+      {%- match topbar_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
       <header class="wf-topbar">
         <div class="wf-crumbs">
+          {%- match breadcrumbs_html -%}
+          {%- when Some with (html) -%}
+          {{ html }}
+          {%- when None -%}
           <span aria-current="page">{{ app_name }}</span>
+          {%- endmatch -%}
         </div>
         <div class="wf-grow"></div>
         {{ actions_html|safe }}
       </header>
+      {%- endmatch -%}
 
       <main class="wf-scroll">
         {{ content_html|safe }}

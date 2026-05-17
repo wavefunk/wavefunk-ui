@@ -1,0 +1,17 @@
+<title>{{ title }}</title>
+<span id="page-title" hidden>{{ title }}</span>
+{%- match content_id -%}
+{%- when Some with (id) %}
+<div id="{{ id }}">
+  {{ content_html }}
+</div>
+{%- when None %}
+{{ content_html }}
+{%- endmatch -%}
+{%- match nav_html -%}
+{%- when Some with (html) %}
+<nav class="wf-nav-list" id="{{ nav_target_id }}" hx-swap-oob="outerHTML">
+  {{ html }}
+</nav>
+{%- when None -%}
+{%- endmatch -%}

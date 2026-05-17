@@ -39,11 +39,25 @@ fn axum_gallery_exposes_real_htmx_backend_routes() {
         r#"HtmlAttr::hx_get("/fragments/table")"#,
         r##"HtmlAttr::new("hx-indicator", "#profile-saving")"##,
         r#"HtmlAttr::hx_trigger("keyup changed delay:250ms, search")"#,
-        r#"hx-swap-oob="outerHTML""#,
     ] {
         assert!(
             source.contains(htmx_attr),
             "missing htmx example: {htmx_attr}"
+        );
+    }
+
+    for primitive in [
+        "PageHeader::new(section.title)",
+        "HtmxPartial::new(section.title, TrustedHtml::new(&main))",
+        ".with_nav(TrustedHtml::new(&nav))",
+        "FilterBar::new(TrustedHtml::new(&filter_input))",
+        "RowSelect::new(\"workflow\", name, \"Select workflow\")",
+        "BulkActionBar::new(\"1 selected\", TrustedHtml::new(&bulk_delete))",
+        "TableFooter::new(TrustedHtml::new(\"Showing 1-4 of 4\"))",
+    ] {
+        assert!(
+            source.contains(primitive),
+            "gallery should exercise reusable page/partial primitive: {primitive}"
         );
     }
 
@@ -53,10 +67,61 @@ fn axum_gallery_exposes_real_htmx_backend_routes() {
         "Feedback and overlays",
         "Layout and navigation",
         "Extended primitives",
+        "Migration-ready patterns",
     ] {
         assert!(
             source.contains(section),
             "sidebar/page should expose {section}"
+        );
+    }
+
+    assert!(
+        source.contains("Modal::new(\n        \"Confirm deployment\"")
+            && source.contains(")\n    .large()"),
+        "gallery should exercise large modal sizing"
+    );
+}
+
+#[test]
+fn gallery_example_exposes_migration_readiness_components() {
+    let source = include_str!("../examples/axum_gallery.rs");
+
+    for primitive in [
+        "SettingsSection::new(",
+        "InlineFormRow::new(",
+        "CopyableValue::new(",
+        "CredentialStatusList::new(",
+        "ConfirmAction::new(",
+        "ObjectFieldset::new(",
+        "RepeatableArray::new(",
+        "CurrentUpload::new(",
+        "ReferenceSelect::new(",
+        "MarkdownTextarea::new(",
+        "RichTextHost::new(",
+        r#"HtmlAttr::new("data-wf-dirty-guard", "true")"#,
+        r##"HtmlAttr::new("data-wf-submit-spinner", "#profile-saving")"##,
+    ] {
+        assert!(
+            source.contains(primitive),
+            "gallery should exercise migration primitive: {primitive}"
+        );
+    }
+}
+
+#[test]
+fn gallery_example_exposes_app_shell_extension_points() {
+    let source = include_str!("../examples/axum_gallery.rs");
+
+    for extension in [
+        ".with_head(TrustedHtml::new(",
+        ".with_topbar(TrustedHtml::new(&shell_topbar))",
+        ".with_htmx_sse()",
+        ".with_scripts(TrustedHtml::new(",
+        "gallery-shell-config",
+    ] {
+        assert!(
+            source.contains(extension),
+            "gallery should demonstrate AppShell extension point: {extension}"
         );
     }
 }

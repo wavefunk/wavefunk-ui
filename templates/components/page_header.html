@@ -1,0 +1,36 @@
+<header class="wf-pageheader">
+  <div class="wf-pageheader-main">
+    {%- match back_href -%}
+    {%- when Some with (href) -%}
+    <a class="wf-backlink" href="{{ href }}"><span aria-hidden="true">&larr;</span><span>{{ back_label }}</span></a>
+    {%- when None -%}
+    {%- endmatch -%}
+    <div class="wf-pageheader-titleline">
+      <h1 class="wf-pagetitle">{{ title }}</h1>
+      {%- match meta_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
+      {%- endmatch -%}
+    </div>
+    {%- match subtitle -%}
+    {%- when Some with (text) -%}
+    <p class="wf-pageheader-subtitle">{{ text }}</p>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  {%- if self.has_actions() %}
+  <div class="wf-pageheader-actions">
+    {%- match secondary_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+    {%- match primary_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  {%- endif %}
+</header>

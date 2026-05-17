@@ -1,0 +1,9 @@
+<div class="wf-tablefoot"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <span>{{ content_html }}</span>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <span class="wf-grow"></span>
+  <div class="wf-tablefoot-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

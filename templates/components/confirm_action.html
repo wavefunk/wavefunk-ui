@@ -1,0 +1,8 @@
+<form class="wf-confirm-action" action="{{ action }}" method="{{ method }}">
+  {%- match message -%}
+  {%- when Some with (text) -%}
+  <span class="wf-confirm-message">{{ text }}</span>
+  {%- when None -%}
+  {%- endmatch -%}
+  <button class="wf-btn danger" type="submit"{% match confirm %}{% when Some with (text) %} hx-confirm="{{ text }}"{% when None %}{% endmatch %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ label }}</button>
+</form>

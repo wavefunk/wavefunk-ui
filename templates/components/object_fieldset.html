@@ -1,0 +1,14 @@
+<fieldset class="wf-object-fieldset">
+  <legend class="wf-object-legend">{{ legend }}</legend>
+  {%- match description -%}
+  {%- when Some with (text) -%}
+  <p class="wf-object-description">{{ text }}</p>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-object-body">{{ body_html }}</div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-object-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</fieldset>

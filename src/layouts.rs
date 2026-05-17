@@ -1,6 +1,6 @@
 use crate::{
     assets,
-    components::{Avatar, HtmlAttr, MenuItem, MenuItemKind},
+    components::{Avatar, HtmlAttr, MenuItem, MenuItemKind, TrustedHtml},
     html,
 };
 use askama::Template;
@@ -89,12 +89,17 @@ pub struct AppShell<'a> {
     pub mode: &'a str,
     pub density_class: &'a str,
     pub asset_base_path: &'a str,
+    pub head_html: Option<TrustedHtml<'a>>,
     pub nav_html: &'a str,
+    pub breadcrumbs_html: Option<TrustedHtml<'a>>,
+    pub topbar_html: Option<TrustedHtml<'a>>,
     pub actions_html: &'a str,
     pub content_html: &'a str,
     pub profile: Option<SidebarProfile<'a>>,
     pub status_left: &'a str,
     pub status_right: &'a str,
+    pub include_htmx_sse: bool,
+    pub scripts_html: Option<TrustedHtml<'a>>,
 }
 
 impl<'a> AppShell<'a> {
@@ -105,12 +110,17 @@ impl<'a> AppShell<'a> {
             mode: "dark",
             density_class: "density-dense",
             asset_base_path: assets::DEFAULT_BASE_PATH,
+            head_html: None,
             nav_html: "",
+            breadcrumbs_html: None,
+            topbar_html: None,
             actions_html: "",
             content_html,
             profile: None,
             status_left: app_name,
             status_right: "",
+            include_htmx_sse: false,
+            scripts_html: None,
         }
     }
 
@@ -142,8 +152,23 @@ impl<'a> AppShell<'a> {
         self
     }
 
+    pub const fn with_head(mut self, head_html: TrustedHtml<'a>) -> Self {
+        self.head_html = Some(head_html);
+        self
+    }
+
     pub const fn with_nav(mut self, nav_html: &'a str) -> Self {
         self.nav_html = nav_html;
+        self
+    }
+
+    pub const fn with_breadcrumbs(mut self, breadcrumbs_html: TrustedHtml<'a>) -> Self {
+        self.breadcrumbs_html = Some(breadcrumbs_html);
+        self
+    }
+
+    pub const fn with_topbar(mut self, topbar_html: TrustedHtml<'a>) -> Self {
+        self.topbar_html = Some(topbar_html);
         self
     }
 
@@ -163,12 +188,26 @@ impl<'a> AppShell<'a> {
         self
     }
 
+    pub const fn with_htmx_sse(mut self) -> Self {
+        self.include_htmx_sse = true;
+        self
+    }
+
+    pub const fn with_scripts(mut self, scripts_html: TrustedHtml<'a>) -> Self {
+        self.scripts_html = Some(scripts_html);
+        self
+    }
+
     pub fn stylesheet_link(&self) -> String {
         html::stylesheet_link(self.asset_base_path)
     }
 
     pub fn htmx_script_link(&self) -> String {
         html::htmx_script_link(self.asset_base_path)
+    }
+
+    pub fn htmx_sse_script_link(&self) -> String {
+        html::htmx_sse_script_link(self.asset_base_path)
     }
 
     pub fn script_link(&self) -> String {
@@ -178,10 +217,49 @@ impl<'a> AppShell<'a> {
 
 impl<'a> askama::filters::HtmlSafe for AppShell<'a> {}
 
+#[derive(Debug, Template)]
+#[template(path = "layouts/htmx_partial.html")]
+pub struct HtmxPartial<'a> {
+    pub title: &'a str,
+    pub content_html: TrustedHtml<'a>,
+    pub content_id: Option<&'a str>,
+    pub nav_html: Option<TrustedHtml<'a>>,
+    pub nav_target_id: &'a str,
+}
+
+impl<'a> HtmxPartial<'a> {
+    pub const fn new(title: &'a str, content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            content_html,
+            content_id: None,
+            nav_html: None,
+            nav_target_id: "app-nav",
+        }
+    }
+
+    pub const fn with_content_id(mut self, content_id: &'a str) -> Self {
+        self.content_id = Some(content_id);
+        self
+    }
+
+    pub const fn with_nav(mut self, nav_html: TrustedHtml<'a>) -> Self {
+        self.nav_html = Some(nav_html);
+        self
+    }
+
+    pub const fn with_nav_target_id(mut self, nav_target_id: &'a str) -> Self {
+        self.nav_target_id = nav_target_id;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for HtmxPartial<'a> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::components::{HtmlAttr, MenuItem};
+    use crate::components::{HtmlAttr, MenuItem, TrustedHtml};
 
     #[test]
     fn app_shell_builders_render_variants() {
@@ -200,6 +278,72 @@ mod tests {
         assert!(html.contains(r#"<button class="wf-btn">Save</button>"#));
         assert!(html.contains(">Ready<"));
         assert!(html.contains(">v0.1<"));
+    }
+
+    #[test]
+    fn app_shell_renders_extension_points_for_consumer_chrome() {
+        let html = AppShell::new("Title", "Wave Funk", "<section>Content</section>")
+            .with_head(TrustedHtml::new(
+                r##"<link rel="icon" href="/favicon.svg"><meta name="theme-color" content="#f59e0b">"##,
+            ))
+            .with_breadcrumbs(TrustedHtml::new(
+                r#"<a href="/hooks">Hooks</a><span aria-current="page">Build</span>"#,
+            ))
+            .with_topbar(TrustedHtml::new(
+                r#"<header class="wf-topbar custom"><span>Custom topbar</span></header>"#,
+            ))
+            .with_htmx_sse()
+            .with_scripts(TrustedHtml::new(
+                r#"<script src="/static/app.js" defer></script>"#,
+            ))
+            .render()
+            .unwrap();
+
+        assert!(html.contains(r#"<link rel="icon" href="/favicon.svg">"#));
+        assert!(html.contains(r##"<meta name="theme-color" content="#f59e0b">"##));
+        assert!(html.contains(r#"<header class="wf-topbar custom">"#));
+        assert!(html.contains(">Custom topbar<"));
+        assert!(html.contains(r#"<script src="/static/app.js" defer></script>"#));
+        assert!(html.contains(r#"/static/wavefunk/js/htmx-sse.js"#));
+        assert!(!html.contains(r#"<span aria-current="page">Wave Funk</span>"#));
+    }
+
+    #[test]
+    fn app_shell_can_override_default_breadcrumbs_without_replacing_topbar() {
+        let html = AppShell::new("Title", "Wave Funk", "<section>Content</section>")
+            .with_breadcrumbs(TrustedHtml::new(
+                r#"<a href="/projects">Projects</a><span aria-current="page">Deploy</span>"#,
+            ))
+            .with_actions(r#"<button class="wf-btn">Run</button>"#)
+            .render()
+            .unwrap();
+
+        assert!(html.contains(r#"<a href="/projects">Projects</a>"#));
+        assert!(html.contains(r#"<span aria-current="page">Deploy</span>"#));
+        assert!(html.contains(r#"<button class="wf-btn">Run</button>"#));
+        assert!(!html.contains(r#"<span aria-current="page">Wave Funk</span>"#));
+    }
+
+    #[test]
+    fn htmx_partial_carries_title_content_and_optional_oob_nav() {
+        let html = HtmxPartial::new(
+            "Deployments <prod>",
+            TrustedHtml::new(r#"<section class="wf-panel">Rows</section>"#),
+        )
+        .with_content_id("main-content")
+        .with_nav(TrustedHtml::new(
+            r#"<a class="wf-nav-item is-active" href="/deployments">Deployments</a>"#,
+        ))
+        .render()
+        .unwrap();
+
+        assert!(html.contains("<title>Deployments "));
+        assert!(!html.contains("<title>Deployments <prod>"));
+        assert!(html.contains(r#"<span id="page-title" hidden>Deployments "#));
+        assert!(html.contains(r#"<div id="main-content">"#));
+        assert!(html.contains(r#"<section class="wf-panel">Rows</section>"#));
+        assert!(html.contains(r#"<nav class="wf-nav-list" id="app-nav" hx-swap-oob="outerHTML">"#));
+        assert!(html.contains(r#"<a class="wf-nav-item is-active" href="/deployments">"#));
     }
 
     #[test]

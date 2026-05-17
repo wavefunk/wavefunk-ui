@@ -1,0 +1,21 @@
+<div class="wf-current-upload">
+  {%- match thumbnail_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-current-upload-thumb">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-current-upload-copy">
+    <div class="wf-current-upload-label">{{ label }}</div>
+    <a href="{{ href }}">{{ filename }}</a>
+    {%- match meta -%}
+    {%- when Some with (text) -%}
+    <div class="wf-current-upload-meta">{{ text }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-current-upload-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

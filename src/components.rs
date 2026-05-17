@@ -445,6 +445,251 @@ impl<'a> askama::filters::HtmlSafe for FormActions<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/object_fieldset.html")]
+pub struct ObjectFieldset<'a> {
+    pub legend: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub description: Option<&'a str>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> ObjectFieldset<'a> {
+    pub const fn new(legend: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            legend,
+            body_html,
+            description: None,
+            actions_html: None,
+        }
+    }
+
+    pub const fn with_description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ObjectFieldset<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/repeatable_array.html")]
+pub struct RepeatableArray<'a> {
+    pub label: &'a str,
+    pub items_html: TrustedHtml<'a>,
+    pub description: Option<&'a str>,
+    pub action_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> RepeatableArray<'a> {
+    pub const fn new(label: &'a str, items_html: TrustedHtml<'a>) -> Self {
+        Self {
+            label,
+            items_html,
+            description: None,
+            action_html: None,
+        }
+    }
+
+    pub const fn with_description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub const fn with_action(mut self, action_html: TrustedHtml<'a>) -> Self {
+        self.action_html = Some(action_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for RepeatableArray<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/repeatable_item.html")]
+pub struct RepeatableItem<'a> {
+    pub label: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> RepeatableItem<'a> {
+    pub const fn new(label: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            label,
+            body_html,
+            actions_html: None,
+        }
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for RepeatableItem<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/current_upload.html")]
+pub struct CurrentUpload<'a> {
+    pub label: &'a str,
+    pub href: &'a str,
+    pub filename: &'a str,
+    pub meta: Option<&'a str>,
+    pub thumbnail_html: Option<TrustedHtml<'a>>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> CurrentUpload<'a> {
+    pub const fn new(label: &'a str, href: &'a str, filename: &'a str) -> Self {
+        Self {
+            label,
+            href,
+            filename,
+            meta: None,
+            thumbnail_html: None,
+            actions_html: None,
+        }
+    }
+
+    pub const fn with_meta(mut self, meta: &'a str) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+
+    pub const fn with_thumbnail(mut self, thumbnail_html: TrustedHtml<'a>) -> Self {
+        self.thumbnail_html = Some(thumbnail_html);
+        self
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for CurrentUpload<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/reference_select.html")]
+pub struct ReferenceSelect<'a> {
+    pub label: &'a str,
+    pub select_html: TrustedHtml<'a>,
+    pub hint: Option<&'a str>,
+}
+
+impl<'a> ReferenceSelect<'a> {
+    pub const fn new(label: &'a str, select_html: TrustedHtml<'a>) -> Self {
+        Self {
+            label,
+            select_html,
+            hint: None,
+        }
+    }
+
+    pub const fn with_hint(mut self, hint: &'a str) -> Self {
+        self.hint = Some(hint);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ReferenceSelect<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/markdown_textarea.html")]
+pub struct MarkdownTextarea<'a> {
+    pub name: &'a str,
+    pub value: Option<&'a str>,
+    pub placeholder: Option<&'a str>,
+    pub rows: u16,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> MarkdownTextarea<'a> {
+    pub const fn new(name: &'a str) -> Self {
+        Self {
+            name,
+            value: None,
+            placeholder: None,
+            rows: 6,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_value(mut self, value: &'a str) -> Self {
+        self.value = Some(value);
+        self
+    }
+
+    pub const fn with_placeholder(mut self, placeholder: &'a str) -> Self {
+        self.placeholder = Some(placeholder);
+        self
+    }
+
+    pub const fn with_rows(mut self, rows: u16) -> Self {
+        self.rows = rows;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for MarkdownTextarea<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/rich_text_host.html")]
+pub struct RichTextHost<'a> {
+    pub id: &'a str,
+    pub name: &'a str,
+    pub value: Option<&'a str>,
+    pub toolbar_html: Option<TrustedHtml<'a>>,
+    pub body_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> RichTextHost<'a> {
+    pub const fn new(id: &'a str, name: &'a str) -> Self {
+        Self {
+            id,
+            name,
+            value: None,
+            toolbar_html: None,
+            body_html: None,
+        }
+    }
+
+    pub const fn with_value(mut self, value: &'a str) -> Self {
+        self.value = Some(value);
+        self
+    }
+
+    pub const fn with_toolbar(mut self, toolbar_html: TrustedHtml<'a>) -> Self {
+        self.toolbar_html = Some(toolbar_html);
+        self
+    }
+
+    pub const fn with_body(mut self, body_html: TrustedHtml<'a>) -> Self {
+        self.body_html = Some(body_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for RichTextHost<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/button_group.html")]
 pub struct ButtonGroup<'a> {
     pub buttons: &'a [Button<'a>],
@@ -604,6 +849,13 @@ impl<'a> Input<'a> {
     pub const fn url(name: &'a str) -> Self {
         Self {
             input_type: "url",
+            ..Self::new(name)
+        }
+    }
+
+    pub const fn search(name: &'a str) -> Self {
+        Self {
+            input_type: "search",
             ..Self::new(name)
         }
     }
@@ -1119,6 +1371,243 @@ impl<'a> askama::filters::HtmlSafe for Panel<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/settings_section.html")]
+pub struct SettingsSection<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub description: Option<&'a str>,
+    pub action_html: Option<TrustedHtml<'a>>,
+    pub danger: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> SettingsSection<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            description: None,
+            action_html: None,
+            danger: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub const fn with_action(mut self, action_html: TrustedHtml<'a>) -> Self {
+        self.action_html = Some(action_html);
+        self
+    }
+
+    pub const fn danger(mut self) -> Self {
+        self.danger = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        if self.danger {
+            "wf-panel wf-settings-section is-danger"
+        } else {
+            "wf-panel wf-settings-section"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for SettingsSection<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/inline_form_row.html")]
+pub struct InlineFormRow<'a> {
+    pub label: &'a str,
+    pub control_html: TrustedHtml<'a>,
+    pub hint: Option<&'a str>,
+    pub action_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> InlineFormRow<'a> {
+    pub const fn new(label: &'a str, control_html: TrustedHtml<'a>) -> Self {
+        Self {
+            label,
+            control_html,
+            hint: None,
+            action_html: None,
+        }
+    }
+
+    pub const fn with_hint(mut self, hint: &'a str) -> Self {
+        self.hint = Some(hint);
+        self
+    }
+
+    pub const fn with_action(mut self, action_html: TrustedHtml<'a>) -> Self {
+        self.action_html = Some(action_html);
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for InlineFormRow<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/copyable_value.html")]
+pub struct CopyableValue<'a> {
+    pub label: &'a str,
+    pub id: &'a str,
+    pub value: &'a str,
+    pub button_label: &'a str,
+    pub secret: bool,
+}
+
+impl<'a> CopyableValue<'a> {
+    pub const fn new(label: &'a str, id: &'a str, value: &'a str) -> Self {
+        Self {
+            label,
+            id,
+            value,
+            button_label: "Copy",
+            secret: false,
+        }
+    }
+
+    pub const fn with_button_label(mut self, button_label: &'a str) -> Self {
+        self.button_label = button_label;
+        self
+    }
+
+    pub const fn secret(mut self) -> Self {
+        self.secret = true;
+        self
+    }
+
+    pub fn value_class(&self) -> &'static str {
+        if self.secret {
+            "wf-copyable-value is-secret"
+        } else {
+            "wf-copyable-value"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for CopyableValue<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CredentialStatusItem<'a> {
+    pub label: &'a str,
+    pub value: &'a str,
+    pub kind: FeedbackKind,
+    pub status_label: &'a str,
+}
+
+impl<'a> CredentialStatusItem<'a> {
+    pub const fn new(
+        label: &'a str,
+        value: &'a str,
+        kind: FeedbackKind,
+        status_label: &'a str,
+    ) -> Self {
+        Self {
+            label,
+            value,
+            kind,
+            status_label,
+        }
+    }
+
+    pub const fn ok(label: &'a str, value: &'a str) -> Self {
+        Self::new(label, value, FeedbackKind::Ok, "ok")
+    }
+
+    pub const fn warn(label: &'a str, value: &'a str) -> Self {
+        Self::new(label, value, FeedbackKind::Warn, "warn")
+    }
+
+    pub const fn error(label: &'a str, value: &'a str) -> Self {
+        Self::new(label, value, FeedbackKind::Error, "error")
+    }
+
+    pub const fn info(label: &'a str, value: &'a str) -> Self {
+        Self::new(label, value, FeedbackKind::Info, "info")
+    }
+
+    pub fn kind_class(&self) -> String {
+        format!("wf-tag {}", self.kind.class())
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/credential_status_list.html")]
+pub struct CredentialStatusList<'a> {
+    pub items: &'a [CredentialStatusItem<'a>],
+}
+
+impl<'a> CredentialStatusList<'a> {
+    pub const fn new(items: &'a [CredentialStatusItem<'a>]) -> Self {
+        Self { items }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for CredentialStatusList<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/confirm_action.html")]
+pub struct ConfirmAction<'a> {
+    pub label: &'a str,
+    pub action: &'a str,
+    pub method: &'a str,
+    pub message: Option<&'a str>,
+    pub confirm: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> ConfirmAction<'a> {
+    pub const fn new(label: &'a str, action: &'a str) -> Self {
+        Self {
+            label,
+            action,
+            method: "post",
+            message: None,
+            confirm: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_method(mut self, method: &'a str) -> Self {
+        self.method = method;
+        self
+    }
+
+    pub const fn with_message(mut self, message: &'a str) -> Self {
+        self.message = Some(message);
+        self
+    }
+
+    pub const fn with_confirm(mut self, confirm: &'a str) -> Self {
+        self.confirm = Some(confirm);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ConfirmAction<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/card.html")]
 pub struct Card<'a> {
     pub title: &'a str,
@@ -1484,6 +1973,65 @@ impl<'a> Breadcrumbs<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for Breadcrumbs<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/page_header.html")]
+pub struct PageHeader<'a> {
+    pub title: &'a str,
+    pub subtitle: Option<&'a str>,
+    pub back_href: Option<&'a str>,
+    pub back_label: &'a str,
+    pub meta_html: Option<TrustedHtml<'a>>,
+    pub primary_html: Option<TrustedHtml<'a>>,
+    pub secondary_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> PageHeader<'a> {
+    pub const fn new(title: &'a str) -> Self {
+        Self {
+            title,
+            subtitle: None,
+            back_href: None,
+            back_label: "Back",
+            meta_html: None,
+            primary_html: None,
+            secondary_html: None,
+        }
+    }
+
+    pub const fn with_subtitle(mut self, subtitle: &'a str) -> Self {
+        self.subtitle = Some(subtitle);
+        self
+    }
+
+    pub const fn with_back(mut self, href: &'a str, label: &'a str) -> Self {
+        self.back_href = Some(href);
+        self.back_label = label;
+        self
+    }
+
+    pub const fn with_meta(mut self, meta_html: TrustedHtml<'a>) -> Self {
+        self.meta_html = Some(meta_html);
+        self
+    }
+
+    pub const fn with_primary(mut self, primary_html: TrustedHtml<'a>) -> Self {
+        self.primary_html = Some(primary_html);
+        self
+    }
+
+    pub const fn with_secondary(mut self, secondary_html: TrustedHtml<'a>) -> Self {
+        self.secondary_html = Some(secondary_html);
+        self
+    }
+
+    pub const fn has_actions(&self) -> bool {
+        self.primary_html.is_some() || self.secondary_html.is_some()
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for PageHeader<'a> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct TabItem<'a> {
@@ -2123,6 +2671,20 @@ impl<'a> DataTableHeader<'a> {
         }
     }
 
+    pub const fn sort(label: &'a str, sort_key: &'a str) -> Self {
+        Self {
+            sort_key: Some(sort_key),
+            ..Self::new(label)
+        }
+    }
+
+    pub const fn sorted(label: &'a str, sort_key: &'a str, direction: SortDirection) -> Self {
+        Self {
+            sort_direction: Some(direction),
+            ..Self::sort(label, sort_key)
+        }
+    }
+
     pub const fn sortable(mut self, sort_key: &'a str, direction: SortDirection) -> Self {
         self.sort_key = Some(sort_key);
         self.sort_direction = Some(direction);
@@ -2313,13 +2875,146 @@ impl<'a> askama::filters::HtmlSafe for DataTable<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/filter_bar.html")]
+pub struct FilterBar<'a> {
+    pub controls_html: TrustedHtml<'a>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> FilterBar<'a> {
+    pub const fn new(controls_html: TrustedHtml<'a>) -> Self {
+        Self {
+            controls_html,
+            actions_html: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for FilterBar<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/bulk_action_bar.html")]
+pub struct BulkActionBar<'a> {
+    pub count_label: &'a str,
+    pub actions_html: TrustedHtml<'a>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> BulkActionBar<'a> {
+    pub const fn new(count_label: &'a str, actions_html: TrustedHtml<'a>) -> Self {
+        Self {
+            count_label,
+            actions_html,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for BulkActionBar<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/table_footer.html")]
+pub struct TableFooter<'a> {
+    pub content_html: TrustedHtml<'a>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> TableFooter<'a> {
+    pub const fn new(content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            content_html,
+            actions_html: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for TableFooter<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/row_select.html")]
+pub struct RowSelect<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+    pub label: &'a str,
+    pub checked: bool,
+    pub disabled: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> RowSelect<'a> {
+    pub const fn new(name: &'a str, value: &'a str, label: &'a str) -> Self {
+        Self {
+            name,
+            value,
+            label,
+            checked: false,
+            disabled: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn checked(mut self) -> Self {
+        self.checked = true;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for RowSelect<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/table_wrap.html")]
 pub struct TableWrap<'a> {
     pub table_html: TrustedHtml<'a>,
     pub filterbar_html: Option<TrustedHtml<'a>>,
+    pub filterbar_component_html: Option<TrustedHtml<'a>>,
     pub bulk_count: Option<&'a str>,
     pub bulk_actions_html: Option<TrustedHtml<'a>>,
+    pub bulkbar_component_html: Option<TrustedHtml<'a>>,
     pub footer_html: Option<TrustedHtml<'a>>,
+    pub footer_component_html: Option<TrustedHtml<'a>>,
 }
 
 impl<'a> TableWrap<'a> {
@@ -2327,14 +3022,22 @@ impl<'a> TableWrap<'a> {
         Self {
             table_html,
             filterbar_html: None,
+            filterbar_component_html: None,
             bulk_count: None,
             bulk_actions_html: None,
+            bulkbar_component_html: None,
             footer_html: None,
+            footer_component_html: None,
         }
     }
 
     pub const fn with_filterbar(mut self, filterbar_html: TrustedHtml<'a>) -> Self {
         self.filterbar_html = Some(filterbar_html);
+        self
+    }
+
+    pub const fn with_filterbar_component(mut self, filterbar_html: TrustedHtml<'a>) -> Self {
+        self.filterbar_component_html = Some(filterbar_html);
         self
     }
 
@@ -2348,8 +3051,18 @@ impl<'a> TableWrap<'a> {
         self
     }
 
+    pub const fn with_bulkbar_component(mut self, bulkbar_html: TrustedHtml<'a>) -> Self {
+        self.bulkbar_component_html = Some(bulkbar_html);
+        self
+    }
+
     pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
         self.footer_html = Some(footer_html);
+        self
+    }
+
+    pub const fn with_footer_component(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_component_html = Some(footer_html);
         self
     }
 }
@@ -2931,6 +3644,22 @@ impl<'a> Popover<'a> {
 
 impl<'a> askama::filters::HtmlSafe for Popover<'a> {}
 
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum ModalSize {
+    #[default]
+    Default,
+    Large,
+}
+
+impl ModalSize {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Default => "",
+            Self::Large => " wf-modal--lg",
+        }
+    }
+}
+
 #[derive(Debug, Template)]
 #[non_exhaustive]
 #[template(path = "components/modal.html")]
@@ -2939,6 +3668,7 @@ pub struct Modal<'a> {
     pub body_html: TrustedHtml<'a>,
     pub footer_html: Option<TrustedHtml<'a>>,
     pub open: bool,
+    pub size: ModalSize,
 }
 
 impl<'a> Modal<'a> {
@@ -2948,6 +3678,7 @@ impl<'a> Modal<'a> {
             body_html,
             footer_html: None,
             open: false,
+            size: ModalSize::Default,
         }
     }
 
@@ -2961,6 +3692,15 @@ impl<'a> Modal<'a> {
         self
     }
 
+    pub const fn with_size(mut self, size: ModalSize) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub const fn large(self) -> Self {
+        self.with_size(ModalSize::Large)
+    }
+
     pub fn overlay_class(&self) -> &'static str {
         if self.open {
             "wf-overlay is-open"
@@ -2969,12 +3709,16 @@ impl<'a> Modal<'a> {
         }
     }
 
-    pub fn modal_class(&self) -> &'static str {
-        if self.open {
-            "wf-modal is-open"
-        } else {
-            "wf-modal"
-        }
+    pub fn modal_class(&self) -> String {
+        let open = if self.open { " is-open" } else { "" };
+        let size = self.size.class();
+        format!("wf-modal{open}{size}")
+    }
+}
+
+impl<'a> Default for Modal<'a> {
+    fn default() -> Self {
+        Self::new("", TrustedHtml::new(""))
     }
 }
 
@@ -3711,6 +4455,35 @@ mod tests {
     }
 
     #[test]
+    fn page_header_supports_title_meta_back_and_action_slots() {
+        let primary = Button::primary("Create").render().unwrap();
+        let secondary = Button::new("Export").render().unwrap();
+        let header = PageHeader::new("Deployments <prod>")
+            .with_subtitle("Filtered by team <ops>")
+            .with_back("/settings", "Settings")
+            .with_meta(TrustedHtml::new(
+                r#"<span class="wf-badge muted">12</span>"#,
+            ))
+            .with_primary(TrustedHtml::new(&primary))
+            .with_secondary(TrustedHtml::new(&secondary))
+            .render()
+            .unwrap();
+
+        assert!(header.contains(r#"class="wf-pageheader""#));
+        assert!(header.contains(r#"class="wf-pageheader-main""#));
+        assert!(header.contains(r#"<a class="wf-backlink" href="/settings">"#));
+        assert!(header.contains(">Settings<"));
+        assert!(header.contains(r#"class="wf-pagetitle""#));
+        assert!(!header.contains("Deployments <prod>"));
+        assert!(header.contains(r#"class="wf-pageheader-subtitle""#));
+        assert!(!header.contains("Filtered by team <ops>"));
+        assert!(header.contains(r#"<span class="wf-badge muted">12</span>"#));
+        assert!(header.contains(r#"class="wf-pageheader-actions""#));
+        assert!(header.contains(">Create<"));
+        assert!(header.contains(">Export<"));
+    }
+
+    #[test]
     fn feedback_overlay_and_loading_primitives_render_expected_markup() {
         let callout = Callout::new(FeedbackKind::Warn, TrustedHtml::new("<p>Heads up</p>"))
             .with_title("Warning")
@@ -3780,6 +4553,23 @@ mod tests {
     }
 
     #[test]
+    fn modal_size_and_spacing_utilities_cover_large_overlay_layouts() {
+        let modal = Modal::new("Edit record", TrustedHtml::new("<p>Large form</p>"))
+            .large()
+            .open()
+            .render()
+            .unwrap();
+        let components_css = include_str!("../static/wavefunk/css/04-components.css");
+        let utilities_css = include_str!("../static/wavefunk/css/05-utilities.css");
+
+        assert!(modal.contains(r#"class="wf-modal is-open wf-modal--lg""#));
+        assert!(components_css.contains(".wf-modal--lg"));
+        assert!(utilities_css.contains(".wf-mb-1 { margin-bottom: 4px; }"));
+        assert!(utilities_css.contains(".wf-mb-8 { margin-bottom: 32px; }"));
+        assert!(utilities_css.contains(".wf-ml-2 { margin-left: 8px; }"));
+    }
+
+    #[test]
     fn form_composition_and_dropzone_components_render_expected_markup() {
         let input_html = Input::email("email")
             .with_placeholder("you@example.test")
@@ -3829,6 +4619,7 @@ mod tests {
         assert!(form_html.contains(r#"hx-post="/profile""#));
         assert!(!form_html.contains(r#"action="/profile/save?next=<home>""#));
         assert!(dropzone_html.contains(r#"class="wf-dropzone is-dragover is-disabled""#));
+        assert!(dropzone_html.contains("data-upload-zone"));
         assert!(dropzone_html.contains(r#"type="file""#));
         assert!(dropzone_html.contains(r#"multiple"#));
         assert!(dropzone_html.contains(r#"disabled"#));
@@ -3837,6 +4628,70 @@ mod tests {
         assert!(!dropzone_html.contains(r#"data-intent="avatar <upload>""#));
         assert!(!dropzone_html.contains("Drop avatar <image>"));
         assert!(!dropzone_html.contains("PNG or JPG <2MB>"));
+    }
+
+    #[test]
+    fn generated_form_building_blocks_render_generic_schema_shapes() {
+        let title = Input::new("title").render().unwrap();
+        let title_field = Field::new("Title", TrustedHtml::new(&title))
+            .render()
+            .unwrap();
+        let object = ObjectFieldset::new("Metadata", TrustedHtml::new(&title_field))
+            .with_description("Nested object fields")
+            .render()
+            .unwrap();
+        let item = RepeatableItem::new("Link 1", TrustedHtml::new(&title_field))
+            .with_actions(TrustedHtml::new(
+                r#"<button class="wf-btn sm">Remove</button>"#,
+            ))
+            .render()
+            .unwrap();
+        let array = RepeatableArray::new("Links", TrustedHtml::new(&item))
+            .with_description("Zero or more external links.")
+            .with_action(TrustedHtml::new(
+                r#"<button class="wf-btn sm">Add link</button>"#,
+            ))
+            .render()
+            .unwrap();
+        let upload = CurrentUpload::new("Hero image", "/media/hero.jpg", "hero.jpg")
+            .with_meta("1200x630 JPG")
+            .with_thumbnail(TrustedHtml::new(r#"<img src="/media/hero.jpg" alt="">"#))
+            .render()
+            .unwrap();
+        let options = [
+            SelectOption::new("home", "Home"),
+            SelectOption::new("about", "About").selected(),
+        ];
+        let select = Select::new("related_page", &options).render().unwrap();
+        let reference = ReferenceSelect::new("Related page", TrustedHtml::new(&select))
+            .with_hint("Search and choose another record.")
+            .render()
+            .unwrap();
+        let markdown = MarkdownTextarea::new("body")
+            .with_value("# Hello")
+            .with_rows(8)
+            .render()
+            .unwrap();
+        let richtext = RichTextHost::new("body-editor", "body_html")
+            .with_value("<p>Hello</p>")
+            .with_toolbar(TrustedHtml::new(
+                r#"<button class="wf-btn sm">Bold</button>"#,
+            ))
+            .render()
+            .unwrap();
+
+        assert!(object.contains(r#"<fieldset class="wf-object-fieldset">"#));
+        assert!(object.contains(r#"<legend class="wf-object-legend">Metadata</legend>"#));
+        assert!(array.contains(r#"class="wf-repeatable-array""#));
+        assert!(array.contains(r#"class="wf-repeatable-item""#));
+        assert!(upload.contains(r#"class="wf-current-upload""#));
+        assert!(upload.contains(r#"<a href="/media/hero.jpg">hero.jpg</a>"#));
+        assert!(reference.contains(r#"class="wf-reference-select""#));
+        assert!(markdown.contains(r#"class="wf-textarea wf-markdown-textarea""#));
+        assert!(markdown.contains("data-wf-markdown"));
+        assert!(richtext.contains(r#"class="wf-richtext""#));
+        assert!(richtext.contains("data-wf-richtext"));
+        assert!(richtext.contains(r#"data-wf-richtext-modal-host"#));
     }
 
     #[test]
@@ -3896,6 +4751,74 @@ mod tests {
         assert!(wrap_html.contains(r#"class="wf-filterbar""#));
         assert!(wrap_html.contains(r#"class="wf-bulkbar""#));
         assert!(wrap_html.contains(r#"class="wf-tablefoot""#));
+    }
+
+    #[test]
+    fn resource_table_chrome_components_compose_filter_bulk_footer_and_selection() {
+        let filter_input = Input::search("q")
+            .with_placeholder("Search resources")
+            .with_size(ControlSize::Small)
+            .render()
+            .unwrap();
+        let filter_action = Button::new("Refresh").render().unwrap();
+        let filterbar = FilterBar::new(TrustedHtml::new(&filter_input))
+            .with_actions(TrustedHtml::new(&filter_action))
+            .render()
+            .unwrap();
+        let bulk_action = Button::new("Delete")
+            .with_variant(ButtonVariant::Danger)
+            .render()
+            .unwrap();
+        let bulkbar = BulkActionBar::new("2 selected", TrustedHtml::new(&bulk_action))
+            .render()
+            .unwrap();
+        let footer_action = Pagination::new(&[
+            PageLink::link("1", "/page/1").active(),
+            PageLink::link("2", "/page/2"),
+        ])
+        .render()
+        .unwrap();
+        let footer = TableFooter::new(TrustedHtml::new("Showing 1-2 of 8"))
+            .with_actions(TrustedHtml::new(&footer_action))
+            .render()
+            .unwrap();
+        let selector = RowSelect::new("selected", "build", "Select Build")
+            .checked()
+            .render()
+            .unwrap();
+        let headers = [
+            DataTableHeader::new("").with_width(TableColumnWidth::Checkbox),
+            DataTableHeader::sorted("Name", "name", SortDirection::Ascending),
+        ];
+        let cells = [
+            DataTableCell::html(TrustedHtml::new(&selector)),
+            DataTableCell::strong("Build"),
+        ];
+        let rows = [DataTableRow::new(&cells).selected()];
+        let table = DataTable::new(&headers, &rows)
+            .interactive()
+            .render()
+            .unwrap();
+        let wrap = TableWrap::new(TrustedHtml::new(&table))
+            .with_filterbar_component(TrustedHtml::new(&filterbar))
+            .with_bulkbar_component(TrustedHtml::new(&bulkbar))
+            .with_footer_component(TrustedHtml::new(&footer))
+            .render()
+            .unwrap();
+
+        assert!(filterbar.contains(r#"class="wf-filterbar""#));
+        assert!(filterbar.contains(r#"class="wf-filterbar-actions""#));
+        assert!(bulkbar.contains(r#"class="wf-bulkbar""#));
+        assert!(bulkbar.contains(r#"class="wf-sel-count">2 selected"#));
+        assert!(footer.contains(r#"class="wf-tablefoot""#));
+        assert!(footer.contains(r#"class="wf-tablefoot-actions""#));
+        assert!(selector.contains(r#"class="wf-check wf-rowselect""#));
+        assert!(selector.contains(r#"aria-label="Select Build""#));
+        assert!(selector.contains("checked"));
+        assert!(table.contains(r#"data-sort-key="name""#));
+        assert!(wrap.matches(r#"class="wf-filterbar""#).count() == 1);
+        assert!(wrap.matches(r#"class="wf-bulkbar""#).count() == 1);
+        assert!(wrap.matches(r#"class="wf-tablefoot""#).count() == 1);
     }
 
     #[test]
@@ -4010,6 +4933,57 @@ mod tests {
         assert!(tree.contains(r#"class="is-collapsed""#));
         assert!(!tree.contains("src <root>"));
         assert!(framed.contains(r#"class="wf-framed dense dashed""#));
+    }
+
+    #[test]
+    fn settings_and_admin_workflow_primitives_render_generic_markup() {
+        let input = Input::email("email").render().unwrap();
+        let save = Button::primary("Save")
+            .with_button_type("submit")
+            .render()
+            .unwrap();
+        let row = InlineFormRow::new("Notification email", TrustedHtml::new(&input))
+            .with_hint("Used for account notices <private>")
+            .with_action(TrustedHtml::new(&save))
+            .render()
+            .unwrap();
+        let copy = CopyableValue::new("Webhook URL", "webhook-url", "https://example.test/hook")
+            .with_button_label("Copy URL")
+            .render()
+            .unwrap();
+        let statuses = [
+            CredentialStatusItem::ok("Mail", "Configured"),
+            CredentialStatusItem::warn("Backups", "Rotation due"),
+        ];
+        let status_list = CredentialStatusList::new(&statuses).render().unwrap();
+        let confirm = ConfirmAction::new("Delete workspace", "/settings/delete")
+            .with_message("This cannot be undone.")
+            .with_confirm("Delete this workspace?")
+            .render()
+            .unwrap();
+        let section_body = format!("{row}{copy}{status_list}{confirm}");
+        let section = SettingsSection::new("Workspace settings", TrustedHtml::new(&section_body))
+            .with_description("Operational settings for this app.")
+            .danger()
+            .render()
+            .unwrap();
+
+        assert!(row.contains(r#"class="wf-inline-form-row""#));
+        assert!(!row.contains("account notices <private>"));
+        assert!(copy.contains(r#"class="wf-copyable""#));
+        assert!(copy.contains(r#"id="webhook-url""#));
+        assert!(copy.contains(r##"data-wf-copy="#webhook-url""##));
+        assert!(copy.contains(">Copy URL<"));
+        assert!(status_list.contains(r#"class="wf-credential-list""#));
+        assert!(status_list.contains(r#"class="wf-tag ok""#));
+        assert!(status_list.contains(r#"class="wf-tag warn""#));
+        assert!(confirm.contains(
+            r#"<form class="wf-confirm-action" action="/settings/delete" method="post">"#
+        ));
+        assert!(confirm.contains(r#"hx-confirm="Delete this workspace?""#));
+        assert!(confirm.contains(r#"class="wf-btn danger""#));
+        assert!(section.contains(r#"class="wf-panel wf-settings-section is-danger""#));
+        assert!(section.contains("Operational settings for this app."));
     }
 
     #[test]

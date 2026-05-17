@@ -1,0 +1,21 @@
+<div class="wf-richtext" id="{{ id }}" data-wf-richtext>
+  <input type="hidden" name="{{ name }}"{% match value %}{% when Some with (text) %} value="{{ text }}"{% when None %}{% endmatch %}>
+  {%- match toolbar_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-richtext-toolbar">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-richtext-body" contenteditable="true" data-wf-richtext-body>
+    {%- match body_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- match value -%}
+    {%- when Some with (text) -%}
+    {{ text }}
+    {%- when None -%}
+    {%- endmatch -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-richtext-modal-host" data-wf-richtext-modal-host></div>
+</div>

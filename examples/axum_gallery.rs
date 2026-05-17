@@ -9,18 +9,22 @@ use axum::{
 use serde::Deserialize;
 use wavefunk_ui::components::{
     Accordion, AccordionItem, Alert, Avatar, AvatarGroup, AvatarSize, Badge, BreadcrumbItem,
-    Breadcrumbs, Button, Callout, Card, DataTable, DataTableCell, DataTableHeader, DataTableRow,
-    DefinitionItem, DefinitionList, Drawer, Dropzone, EmptyState, Faq, FaqItem, FeatureGrid,
-    FeatureItem, Feed, FeedRow, FeedbackKind, Field, FieldState, Form, FormActions, FormSection,
-    Framed, Grid, HtmlAttr, Input, Kbd, MarketingSection, MarketingStep, MarketingStepGrid, Menu,
-    MenuItem, Meter, MeterColor, Minibuffer, Modal, NavItem, NavSection, PageLink, Pagination,
-    Panel, Popover, PricingPlan, PricingPlans, Progress, RankList, RankRow, SegmentOption,
-    SegmentedControl, Skeleton, SortDirection, Spinner, Split, Stat, StatRow, Statusbar, StepItem,
-    Stepper, TabItem, Table, TableCell, TableColumnWidth, TableHeader, TableRow, TableWrap, Tabs,
-    Testimonial, Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml,
-    UserButton, Wordmark,
+    Breadcrumbs, BulkActionBar, Button, ButtonSize, ButtonVariant, Callout, Card, ConfirmAction,
+    CopyableValue, CredentialStatusItem, CredentialStatusList, CurrentUpload, DataTable,
+    DataTableCell, DataTableHeader, DataTableRow, DefinitionItem, DefinitionList, Drawer, Dropzone,
+    EmptyState, Faq, FaqItem, FeatureGrid, FeatureItem, Feed, FeedRow, FeedbackKind, Field,
+    FieldState, FilterBar, Form, FormActions, FormSection, Framed, Grid, HtmlAttr, InlineFormRow,
+    Input, Kbd, MarkdownTextarea, MarketingSection, MarketingStep, MarketingStepGrid, Menu,
+    MenuItem, Meter, MeterColor, Minibuffer, Modal, NavItem, NavSection, ObjectFieldset,
+    PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans, Progress,
+    RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost, RowSelect,
+    SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Skeleton,
+    SortDirection, Spinner, Split, Stat, StatRow, Statusbar, StepItem, Stepper, TabItem, Table,
+    TableCell, TableColumnWidth, TableFooter, TableHeader, TableRow, TableWrap, Tabs, Testimonial,
+    Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml, UserButton,
+    Wordmark,
 };
-use wavefunk_ui::layouts::{AppShell, SidebarProfile};
+use wavefunk_ui::layouts::{AppShell, HtmxPartial, SidebarProfile};
 
 #[derive(Clone, Copy, Debug)]
 struct SectionDef {
@@ -61,6 +65,12 @@ const SECTIONS: &[SectionDef] = &[
         badge: "more",
         blurb: "The less common primitives: stepper, accordion, FAQ, rank/feed rows, timeline, tree view, framed code, and marketing sections.",
     },
+    SectionDef {
+        id: "migration",
+        title: "Migration-ready patterns",
+        badge: "apps",
+        blurb: "Reusable shell, admin, generated-form, and runtime patterns for backend applications.",
+    },
 ];
 
 #[derive(Template)]
@@ -86,13 +96,12 @@ struct GalleryActions<'a> {
 #[template(
     source = r#"
 <div id="gallery-main" class="wf-g wf-gap-5 wf-min-w-0">
+  {{ header_html }}
   <section class="wf-panel">
     <div class="wf-panel-head">
-      <div class="wf-panel-title">{{ section.title }}</div>
-      {{ badge }}
+      <div class="wf-panel-title">Route contract</div>
     </div>
     <div class="wf-panel-body wf-g wf-gap-4">
-      {{ callout }}
       {{ route_notes }}
     </div>
   </section>
@@ -102,9 +111,7 @@ struct GalleryActions<'a> {
     ext = "html"
 )]
 struct GalleryMain<'a> {
-    section: SectionDef,
-    badge: Badge<'a>,
-    callout: Callout<'a>,
+    header_html: TrustedHtml<'a>,
     route_notes: DefinitionList<'a>,
     body_html: TrustedHtml<'a>,
 }
@@ -248,9 +255,28 @@ fn render_shell(section: SectionDef, query: &GalleryQuery) -> String {
         },
         "gallery actions",
     );
+    let crumb_items = [
+        BreadcrumbItem::link("Components", "/components/forms"),
+        BreadcrumbItem::current(section.title),
+    ];
+    let shell_breadcrumbs = render(Breadcrumbs::new(&crumb_items), "shell breadcrumbs");
+    let shell_topbar = render(
+        Topbar::new(
+            TrustedHtml::new(&shell_breadcrumbs),
+            TrustedHtml::new(&actions),
+        ),
+        "shell topbar",
+    );
     let shell = AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
+        .with_head(TrustedHtml::new(
+            r#"<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='black'/%3E%3C/svg%3E"><meta name="theme-color" content="oklch(0.58 0.16 250)">"#,
+        ))
         .with_nav(&nav)
-        .with_actions(&actions)
+        .with_topbar(TrustedHtml::new(&shell_topbar))
+        .with_htmx_sse()
+        .with_scripts(TrustedHtml::new(
+            r#"<script id="gallery-shell-config">window.wavefunkGalleryShell = true;</script>"#,
+        ))
         .with_profile(
             SidebarProfile::new()
                 .with_name("Wave Funk")
@@ -274,6 +300,7 @@ fn render_gallery_main(section: SectionDef, query: &GalleryQuery) -> String {
         "feedback" => feedback_section(query),
         "layout" => layout_section(),
         "extended" => extended_section(query),
+        "migration" => migration_section(),
         _ => forms_section(),
     };
     let full_page_path = format!("/components/{}", section.id);
@@ -283,13 +310,17 @@ fn render_gallery_main(section: SectionDef, query: &GalleryQuery) -> String {
         DefinitionItem::new("Fragment", &fragment_path),
         DefinitionItem::new("Swap target", "#gallery-main"),
     ];
+    let header_badge = render(Badge::muted(section.badge), "section badge");
+    let header = render(
+        PageHeader::new(section.title)
+            .with_subtitle(section.blurb)
+            .with_meta(TrustedHtml::new(&header_badge)),
+        "page header",
+    );
 
     render(
         GalleryMain {
-            section,
-            badge: Badge::muted(section.badge),
-            callout: Callout::new(FeedbackKind::Info, TrustedHtml::new(section.blurb))
-                .with_title("Integration pattern"),
+            header_html: TrustedHtml::new(&header),
             route_notes: DefinitionList::new(&route_items),
             body_html: TrustedHtml::new(&body),
         },
@@ -300,7 +331,10 @@ fn render_gallery_main(section: SectionDef, query: &GalleryQuery) -> String {
 fn render_gallery_fragment(section: SectionDef, query: &GalleryQuery) -> String {
     let main = render_gallery_main(section, query);
     let nav = gallery_nav(section.id);
-    format!(r#"{main}<nav class="wf-nav-list" id="app-nav" hx-swap-oob="outerHTML">{nav}</nav>"#)
+    render(
+        HtmxPartial::new(section.title, TrustedHtml::new(&main)).with_nav(TrustedHtml::new(&nav)),
+        "gallery partial",
+    )
 }
 
 fn gallery_nav(active: &str) -> String {
@@ -381,7 +415,7 @@ fn profile_form() -> String {
     );
     let project = render(
         Input::new("project")
-            .with_value("Substrukt")
+            .with_value("Wave Funk")
             .with_placeholder("Project"),
         "project input",
     );
@@ -426,6 +460,8 @@ fn profile_form() -> String {
         HtmlAttr::hx_target("#profile-result"),
         HtmlAttr::hx_swap("outerHTML"),
         HtmlAttr::new("hx-indicator", "#profile-saving"),
+        HtmlAttr::new("data-wf-submit-spinner", "#profile-saving"),
+        HtmlAttr::new("data-wf-dirty-guard", "true"),
     ];
 
     render(
@@ -511,18 +547,6 @@ fn loading_result_fragment() -> String {
 }
 
 fn data_section() -> String {
-    let filter_attrs = [
-        HtmlAttr::hx_get("/fragments/table"),
-        HtmlAttr::hx_target("#workflow-table"),
-        HtmlAttr::hx_trigger("keyup changed delay:250ms, search"),
-        HtmlAttr::hx_swap("outerHTML"),
-    ];
-    let filter = render(
-        Input::new("q")
-            .with_placeholder("Filter workflows")
-            .with_attrs(&filter_attrs),
-        "workflow filter",
-    );
     let stats = [
         Stat::new("Queued", "3"),
         Stat::new("Successful", "18"),
@@ -550,7 +574,7 @@ fn data_section() -> String {
     ];
     let feed = render(Feed::new(&feed_rows), "feed");
     let body = format!(
-        r#"<div class="wf-g wf-gap-4"><div class="wf-max-w-md">{filter}</div>{stat_row}{data_routes}{table}{rank_list}{feed}</div>"#,
+        r#"<div class="wf-g wf-gap-4">{stat_row}{data_routes}{table}{rank_list}{feed}</div>"#,
         table = workflow_table_fragment("")
     );
 
@@ -569,22 +593,62 @@ fn workflow_table_fragment(query: &str) -> String {
     ];
 
     let needle = query.trim().to_lowercase();
+    let filter_attrs = [
+        HtmlAttr::hx_get("/fragments/table"),
+        HtmlAttr::hx_target("#workflow-table"),
+        HtmlAttr::hx_trigger("keyup changed delay:250ms, search"),
+        HtmlAttr::hx_swap("outerHTML"),
+    ];
+    let filter_input = render(
+        Input::search("q")
+            .with_placeholder("Filter workflows")
+            .with_value(query)
+            .with_attrs(&filter_attrs),
+        "workflow filter",
+    );
+    let refresh = render(
+        Button::new("Refresh")
+            .with_size(ButtonSize::Small)
+            .with_attrs(&[
+                HtmlAttr::hx_get("/fragments/table"),
+                HtmlAttr::hx_target("#workflow-table"),
+            ]),
+        "workflow refresh",
+    );
+    let filterbar = render(
+        FilterBar::new(TrustedHtml::new(&filter_input)).with_actions(TrustedHtml::new(&refresh)),
+        "workflow filterbar",
+    );
     let headers = [
-        DataTableHeader::new("Name").sortable("name", SortDirection::Ascending),
+        DataTableHeader::new("").with_width(TableColumnWidth::Checkbox),
+        DataTableHeader::sorted("Name", "name", SortDirection::Ascending),
         DataTableHeader::numeric("Runs").with_width(TableColumnWidth::Small),
         DataTableHeader::new("Actions").action_column(),
     ];
+    let matches: Vec<_> = WORKFLOWS
+        .iter()
+        .copied()
+        .filter(|(name, _, _)| needle.is_empty() || name.to_lowercase().contains(&needle))
+        .collect();
+    let selectors: Vec<String> = matches
+        .iter()
+        .map(|(name, _, _)| {
+            render(
+                RowSelect::new("workflow", name, "Select workflow").checked(),
+                "workflow row select",
+            )
+        })
+        .collect();
     let mut row_cells = Vec::new();
-    for (name, runs, _action) in WORKFLOWS {
-        if needle.is_empty() || name.to_lowercase().contains(&needle) {
-            row_cells.push([
-                DataTableCell::strong(name),
-                DataTableCell::numeric(runs),
-                DataTableCell::html(TrustedHtml::new(
-                    r#"<button class="wf-icon-btn danger" type="button" aria-label="Stop">&times;</button>"#,
-                )),
-            ]);
-        }
+    for ((name, runs, _action), selector) in matches.iter().zip(selectors.iter()) {
+        row_cells.push([
+            DataTableCell::html(TrustedHtml::new(selector)),
+            DataTableCell::strong(name),
+            DataTableCell::numeric(runs),
+            DataTableCell::html(TrustedHtml::new(
+                r#"<button class="wf-icon-btn danger" type="button" aria-label="Stop">&times;</button>"#,
+            )),
+        ]);
     }
 
     let mut rows = Vec::new();
@@ -607,13 +671,31 @@ fn workflow_table_fragment(query: &str) -> String {
                 .pin_last(),
             "workflow data table",
         );
+        let bulk_delete = render(
+            Button::new("Delete")
+                .with_variant(ButtonVariant::Danger)
+                .with_size(ButtonSize::Small),
+            "workflow bulk delete",
+        );
+        let bulkbar = render(
+            BulkActionBar::new("1 selected", TrustedHtml::new(&bulk_delete)),
+            "workflow bulkbar",
+        );
+        let pages = [
+            PageLink::link("1", "/components/data").active(),
+            PageLink::link("2", "/components/data?page=2"),
+        ];
+        let pagination = render(Pagination::new(&pages), "workflow pagination");
+        let footer = render(
+            TableFooter::new(TrustedHtml::new("Showing 1-4 of 4"))
+                .with_actions(TrustedHtml::new(&pagination)),
+            "workflow footer",
+        );
         render(
             TableWrap::new(TrustedHtml::new(&table))
-                .with_bulkbar(
-                    "1 selected",
-                    TrustedHtml::new(r#"<button class="wf-btn sm">Delete</button>"#),
-                )
-                .with_footer(TrustedHtml::new("Updated by /fragments/table")),
+                .with_filterbar_component(TrustedHtml::new(&filterbar))
+                .with_bulkbar_component(TrustedHtml::new(&bulkbar))
+                .with_footer_component(TrustedHtml::new(&footer)),
             "workflow table wrap",
         )
     };
@@ -652,6 +734,7 @@ fn feedback_section(query: &GalleryQuery) -> String {
         "Confirm deployment",
         TrustedHtml::new("<p>Server-rendered modal markup with dismiss wiring.</p>"),
     )
+    .large()
     .with_footer(TrustedHtml::new(
         r#"<button class="wf-btn primary" data-wf-dismiss="overlay">Confirm</button>"#,
     ));
@@ -801,6 +884,169 @@ fn layout_section() -> String {
     render(
         Panel::new("Layout primitives in an app shell", TrustedHtml::new(&body)),
         "layout panel",
+    )
+}
+
+fn migration_section() -> String {
+    let shell_notes = render(
+        DefinitionList::new(&[
+            DefinitionItem::new(
+                "Shell chrome",
+                "Custom head, topbar, breadcrumbs, and scripts",
+            ),
+            DefinitionItem::new(
+                "Partial swaps",
+                "HtmxPartial updates title and app navigation",
+            ),
+            DefinitionItem::new(
+                "Runtime hooks",
+                "Copy, upload, dirty-form, and submit-spinner helpers",
+            ),
+        ]),
+        "migration shell notes",
+    );
+    let shell_panel = render(
+        Panel::new("Shell extension contract", TrustedHtml::new(&shell_notes)),
+        "migration shell panel",
+    );
+    let settings = migration_settings_section();
+    let generated = migration_generated_form_section();
+
+    format!(r#"{shell_panel}{settings}{generated}"#)
+}
+
+fn migration_settings_section() -> String {
+    let email = render(
+        Input::email("notification_email").with_value("ops@wavefunk.test"),
+        "settings email",
+    );
+    let save = render(
+        Button::primary("Save")
+            .with_button_type("submit")
+            .with_size(ButtonSize::Small),
+        "settings save",
+    );
+    let inline = render(
+        InlineFormRow::new("Notification email", TrustedHtml::new(&email))
+            .with_hint("Used for operational notices.")
+            .with_action(TrustedHtml::new(&save)),
+        "inline form row",
+    );
+    let copy = render(
+        CopyableValue::new(
+            "Webhook URL",
+            "gallery-webhook",
+            "https://example.test/hooks/gallery",
+        )
+        .with_button_label("Copy URL")
+        .secret(),
+        "copyable value",
+    );
+    let statuses = [
+        CredentialStatusItem::ok("Email", "Configured"),
+        CredentialStatusItem::warn("Signing key", "Rotation due"),
+        CredentialStatusItem::info("SSE", "Available"),
+    ];
+    let status_list = render(
+        CredentialStatusList::new(&statuses),
+        "credential status list",
+    );
+    let confirm = render(
+        ConfirmAction::new("Delete workspace", "/components/migration/delete")
+            .with_message("Destructive actions stay generic.")
+            .with_confirm("Delete this workspace?"),
+        "confirm action",
+    );
+    let body = format!("{inline}{copy}{status_list}{confirm}");
+
+    render(
+        SettingsSection::new("Settings and credentials", TrustedHtml::new(&body))
+            .with_description("Generic account, credential, token, and danger-zone composition.")
+            .danger(),
+        "settings section",
+    )
+}
+
+fn migration_generated_form_section() -> String {
+    let title = render(
+        Input::new("title").with_placeholder("Title"),
+        "generated title input",
+    );
+    let title_field = render(
+        Field::new("Title", TrustedHtml::new(&title))
+            .with_hint("Generated from consumer metadata."),
+        "generated title field",
+    );
+    let metadata = render(
+        ObjectFieldset::new("Metadata", TrustedHtml::new(&title_field))
+            .with_description("Nested object group with consumer-owned fields."),
+        "object fieldset",
+    );
+    let link_input = render(
+        Input::url("links[0][url]").with_placeholder("https://example.test"),
+        "repeatable link input",
+    );
+    let link_field = render(
+        Field::new("URL", TrustedHtml::new(&link_input)),
+        "repeatable link field",
+    );
+    let link_item = render(
+        RepeatableItem::new("Link 1", TrustedHtml::new(&link_field)).with_actions(
+            TrustedHtml::new(r#"<button class="wf-btn sm" type="button">Remove</button>"#),
+        ),
+        "repeatable item",
+    );
+    let links = render(
+        RepeatableArray::new("Links", TrustedHtml::new(&link_item))
+            .with_description("Repeatable array item structure.")
+            .with_action(TrustedHtml::new(
+                r#"<button class="wf-btn sm" type="button">Add link</button>"#,
+            )),
+        "repeatable array",
+    );
+    let upload = render(
+        CurrentUpload::new(
+            "Current file",
+            "/static/wavefunk/css/wavefunk.css",
+            "wavefunk.css",
+        )
+        .with_meta("Embedded stylesheet"),
+        "current upload",
+    );
+    let references = [
+        SelectOption::new("forms", "Forms"),
+        SelectOption::new("data", "Data").selected(),
+        SelectOption::new("layout", "Layout"),
+    ];
+    let select = render(
+        Select::new("related_section", &references),
+        "reference select control",
+    );
+    let reference = render(
+        ReferenceSelect::new("Related section", TrustedHtml::new(&select))
+            .with_hint("Reference lookup policy belongs to the consumer."),
+        "reference select",
+    );
+    let markdown = render(
+        MarkdownTextarea::new("summary")
+            .with_placeholder("Write markdown")
+            .with_rows(5),
+        "markdown textarea",
+    );
+    let rich_toolbar = r#"<button class="wf-btn sm" type="button">B</button><button class="wf-btn sm" type="button">I</button>"#;
+    let richtext = render(
+        RichTextHost::new("gallery-richtext", "rich_body")
+            .with_toolbar(TrustedHtml::new(rich_toolbar))
+            .with_body(TrustedHtml::new("<p>Trusted rich text slot.</p>")),
+        "rich text host",
+    );
+    let body = format!(
+        r#"<div class="wf-g wf-gap-4">{metadata}{links}{upload}{reference}{markdown}{richtext}</div>"#
+    );
+
+    render(
+        Panel::new("Generated form building blocks", TrustedHtml::new(&body)),
+        "generated form panel",
     )
 }
 

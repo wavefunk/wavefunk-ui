@@ -1,0 +1,4 @@
+<div class="wf-bulkbar"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <span class="wf-sel-count">{{ count_label }}</span>
+  {{ actions_html }}
+</div>

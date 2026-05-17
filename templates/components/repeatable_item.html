@@ -1,0 +1,11 @@
+<div class="wf-repeatable-item">
+  <div class="wf-repeatable-item-head">
+    <span class="wf-repeatable-item-label">{{ label }}</span>
+    {%- match actions_html -%}
+    {%- when Some with (html) -%}
+    {{ html }}
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-repeatable-item-body">{{ body_html }}</div>
+</div>
