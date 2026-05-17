@@ -36,40 +36,48 @@ struct GalleryNav;
 #[derive(Template)]
 #[template(
     source = r#"
-<a class="wf-btn ghost" href="/?mode=dark&density=dense">Dark</a>
-<a class="wf-btn ghost" href="/?mode=light&density=dense">Light</a>
-<a class="wf-btn ghost" href="/?mode=dark&density=default">Default density</a>
+<a class="wf-btn ghost" href="/?mode=dark&density={{ density }}&state={{ state }}">Dark</a>
+<a class="wf-btn ghost" href="/?mode=light&density={{ density }}&state={{ state }}">Light</a>
+<a class="wf-btn ghost" href="/?mode={{ mode }}&density=default&state={{ state }}">Default density</a>
+<a class="wf-btn ghost" href="/?mode={{ mode }}&density={{ density }}&state=open">Open overlays</a>
+<a class="wf-btn ghost" href="/?mode={{ mode }}&density={{ density }}&state=drawer">Open drawer</a>
+<a class="wf-btn ghost" href="/?mode={{ mode }}&density={{ density }}&state=loading">Loading</a>
+<a class="wf-btn ghost" href="/?mode={{ mode }}&density={{ density }}&state=default">Reset state</a>
 "#,
     ext = "html"
 )]
-struct GalleryActions;
+struct GalleryActions<'a> {
+    mode: &'a str,
+    density: &'a str,
+    state: &'a str,
+}
 
 #[derive(Template)]
 #[template(
     source = r#"
-<div style="display: grid; gap: var(--space-5); min-width: 0;">
+<div class="wf-g wf-gap-5 wf-min-w-0">
   <section class="wf-panel">
     <div class="wf-panel-head">
       <div class="wf-panel-title">Actions and forms</div>
       {{ tag }}
     </div>
-    <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+    <div class="wf-panel-body wf-g wf-gap-4">
       {{ alert }}
       {{ field }}
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;">
+      <div class="wf-f wf-wrap wf-gap-2 wf-ai-c">
         {{ button_group }}
         {{ split_button }}
         {{ icon_button }}
         {{ button }}
         {{ echo_button }}
       </div>
-      <div style="display: grid; gap: var(--space-3); max-width: 560px;">
+      <div class="wf-g wf-gap-3 wf-max-w-md">
         {{ email_input }}
         {{ notes }}
         {{ plan_select }}
         {{ input_group }}
         {{ success_field }}
-        <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;">
+        <div class="wf-f wf-wrap wf-gap-3 wf-ai-c">
           {{ checkbox }}
           {{ radio }}
           {{ switch_control }}
@@ -116,9 +124,9 @@ struct GalleryContent<'a> {
     <div class="wf-panel-title">Layout and data display</div>
     {{ badge }}
   </div>
-  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+  <div class="wf-panel-body wf-g wf-gap-4">
     {{ topbar }}
-    <div style="display: grid; gap: var(--space-2); max-width: 280px;">
+    <div class="wf-g wf-gap-2 wf-max-w-xs">
       {{ nav_section }}
       {{ nav_item }}
     </div>
@@ -127,7 +135,7 @@ struct GalleryContent<'a> {
     {{ segmented }}
     {{ pagination }}
     {{ stat_row }}
-    <div style="display: flex; gap: var(--space-3); align-items: center;">
+    <div class="wf-f wf-gap-3 wf-ai-c">
       {{ avatar }}
       {{ card }}
     </div>
@@ -174,7 +182,7 @@ impl askama::filters::HtmlSafe for LayoutShowcase<'_> {}
     <div class="wf-panel-title">Feedback and overlays</div>
     {{ spinner }}
   </div>
-  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+  <div class="wf-panel-body wf-g wf-gap-4">
     {{ callout }}
     {{ toast }}
     {{ toast_host }}
@@ -182,7 +190,7 @@ impl askama::filters::HtmlSafe for LayoutShowcase<'_> {}
     {{ popover }}
     {{ modal }}
     {{ drawer }}
-    <div style="display: grid; gap: var(--space-2);">
+    <div class="wf-g wf-gap-2">
       {{ skeleton_title }}
       {{ skeleton_line }}
     </div>
@@ -216,10 +224,10 @@ impl askama::filters::HtmlSafe for FeedbackShowcase<'_> {}
     <div class="wf-panel-title">Extended components</div>
     {{ badge }}
   </div>
-  <div class="wf-panel-body" style="display: grid; gap: var(--space-4);">
+  <div class="wf-panel-body wf-g wf-gap-4">
     {{ form_html }}
     {{ table_wrap_html }}
-    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4);">
+    <div class="wf-g wf-cols-2 wf-gap-4">
       {{ progress_html }}
       {{ meter_html }}
     </div>
@@ -227,7 +235,7 @@ impl askama::filters::HtmlSafe for FeedbackShowcase<'_> {}
     {{ stepper_html }}
     {{ accordion_html }}
     {{ faq_html }}
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center;">
+    <div class="wf-f wf-wrap wf-gap-4 wf-ai-c">
       {{ avatar_group_html }}
       {{ user_button_html }}
       {{ wordmark_html }}
@@ -270,6 +278,7 @@ impl askama::filters::HtmlSafe for ExtendedShowcase<'_> {}
 struct GalleryQuery {
     mode: Option<String>,
     density: Option<String>,
+    state: Option<String>,
 }
 
 impl GalleryQuery {
@@ -282,6 +291,35 @@ impl GalleryQuery {
 
     fn default_density(&self) -> bool {
         matches!(self.density.as_deref(), Some("default"))
+    }
+
+    fn density(&self) -> &'static str {
+        if self.default_density() {
+            "default"
+        } else {
+            "dense"
+        }
+    }
+
+    fn state(&self) -> &'static str {
+        match self.state.as_deref() {
+            Some("open") => "open",
+            Some("drawer") => "drawer",
+            Some("loading") => "loading",
+            _ => "default",
+        }
+    }
+
+    fn open_state(&self) -> bool {
+        self.state() == "open"
+    }
+
+    fn loading_state(&self) -> bool {
+        self.state() == "loading"
+    }
+
+    fn drawer_state(&self) -> bool {
+        self.state() == "drawer"
     }
 }
 
@@ -432,7 +470,13 @@ async fn index(Query(query): Query<GalleryQuery>) -> Html<String> {
         .with_footer(TrustedHtml::new("Showing 1-1 of 1"))
         .render()
         .expect("render table wrap");
-    let progress_html = Progress::new(64).render().expect("render progress");
+    let progress_html = if query.loading_state() {
+        Progress::indeterminate()
+    } else {
+        Progress::new(64)
+    }
+    .render()
+    .expect("render progress");
     let meter_html = Meter::new(72)
         .with_size_px(96, 6)
         .with_color(MeterColor::Ok)
@@ -541,6 +585,22 @@ async fn index(Query(query): Query<GalleryQuery>) -> Html<String> {
             )
             .render()
             .expect("render marketing section");
+    let popover = Popover::new(
+        TrustedHtml::new(r#"<button class="wf-btn" data-popover-toggle>Menu</button>"#),
+        TrustedHtml::new(&menu_html),
+    )
+    .with_heading("Actions");
+    let modal = Modal::new("Confirm", TrustedHtml::new("<p>Modal body.</p>")).with_footer(
+        TrustedHtml::new(r#"<button class="wf-btn primary">Confirm</button>"#),
+    );
+    let drawer = Drawer::new("Details", TrustedHtml::new("<p>Drawer body.</p>"));
+    let (popover, modal, drawer) = if query.open_state() {
+        (popover.open(), modal.open(), drawer)
+    } else if query.drawer_state() {
+        (popover, modal, drawer.open())
+    } else {
+        (popover, modal, drawer)
+    };
     let nav = GalleryNav.render().expect("render gallery nav");
     let content = GalleryContent {
         tag: Tag::status(FeedbackKind::Ok, "Embedded assets"),
@@ -616,15 +676,9 @@ async fn index(Query(query): Query<GalleryQuery>) -> Html<String> {
             toast: Toast::new(FeedbackKind::Ok, "Saved."),
             toast_host: ToastHost::new(),
             tooltip: Tooltip::new("Copy id", TrustedHtml::new(r#"<button>copy</button>"#)),
-            popover: Popover::new(
-                TrustedHtml::new(r#"<button class="wf-btn" data-popover-toggle>Menu</button>"#),
-                TrustedHtml::new(&menu_html),
-            )
-            .with_heading("Actions"),
-            modal: Modal::new("Confirm", TrustedHtml::new("<p>Modal body.</p>")).with_footer(
-                TrustedHtml::new(r#"<button class="wf-btn primary">Confirm</button>"#),
-            ),
-            drawer: Drawer::new("Details", TrustedHtml::new("<p>Drawer body.</p>")),
+            popover,
+            modal,
+            drawer,
             skeleton_title: Skeleton::title(),
             skeleton_line: Skeleton::line(),
             spinner: Spinner::large(),
@@ -661,7 +715,13 @@ async fn index(Query(query): Query<GalleryQuery>) -> Html<String> {
     }
     .render()
     .expect("render gallery content");
-    let actions = GalleryActions.render().expect("render gallery actions");
+    let actions = GalleryActions {
+        mode: query.mode(),
+        density: query.density(),
+        state: query.state(),
+    }
+    .render()
+    .expect("render gallery actions");
     let shell = AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
         .with_nav(&nav)
         .with_actions(&actions)

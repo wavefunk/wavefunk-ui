@@ -3757,7 +3757,9 @@ mod tests {
         assert!(popover.contains(r#"class="wf-popover is-open""#));
         assert!(modal.contains(r#"class="wf-modal is-open""#));
         assert!(modal.contains(r#"class="wf-overlay is-open""#));
+        assert!(modal.contains(r#"data-wf-dismiss="overlay""#));
         assert!(drawer.contains(r#"class="wf-drawer is-open left""#));
+        assert!(drawer.contains(r#"data-wf-dismiss="overlay""#));
         assert!(skeleton.contains(r#"class="wf-skeleton title""#));
         assert!(spinner.contains(r#"class="wf-spinner lg""#));
         assert!(minibuffer.contains(r#"class="wf-minibuffer""#));

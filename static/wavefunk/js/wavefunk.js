@@ -1,4 +1,11 @@
 document.addEventListener('click', event => {
+  const dismiss = event.target.closest('[data-wf-dismiss="overlay"]');
+  if (dismiss) {
+    document.querySelectorAll('.wf-overlay.is-open, .wf-modal.is-open, .wf-drawer.is-open')
+      .forEach(item => item.classList.remove('is-open'));
+    return;
+  }
+
   const trigger = event.target.closest('[data-popover-toggle]');
   if (trigger) {
     const anchor = trigger.closest('.wf-pop-anchor');

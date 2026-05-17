@@ -599,6 +599,7 @@
   text-transform: uppercase; letter-spacing: 0.08em;
 }
 .wf-step:last-child { border-right: 0; }
+.wf-step { min-width: 0; }
 .wf-step-num {
   display: inline-flex; align-items: center; justify-content: center;
   width: 24px; height: 24px;
@@ -611,6 +612,11 @@
 .wf-step.is-active .wf-step-num { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .wf-step.is-done { color: var(--fg); }
 .wf-step.is-done .wf-step-num { background: var(--fg-strong); color: var(--bg); border-color: var(--fg-strong); }
+@media (max-width: 600px) {
+  .wf-stepper { flex-direction: column; }
+  .wf-step { border-right: 0; border-bottom: var(--border-1) solid var(--hairline-dim); }
+  .wf-step:last-child { border-bottom: 0; }
+}
 
 /* ── Accordion / FAQ ───────────────────────────────────────────────────── */
 /*  html:
@@ -1341,9 +1347,12 @@
   cursor: pointer;
 }
 .wf-dropzone-input {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  padding: 0; margin: 0;
+  opacity: 0; border: 0;
+  font-size: 0;
+  cursor: pointer;
 }
 .wf-dropzone-frame {
   border: var(--border-1) dashed var(--hairline);
