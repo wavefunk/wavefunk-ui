@@ -5,9 +5,9 @@
   {%- else -%}
     {%- match item.href -%}
     {%- when Some with (href) -%}
-    <a class="{{ item.class_name() }}" href="{{ href }}"{% if item.disabled %} aria-disabled="true"{% endif %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</a>
+    <a class="{{ item.class_name() }}" href="{{ href }}"{% if item.disabled %} aria-disabled="true"{% endif %}{% for attr in item.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</a>
     {%- when None -%}
-    <button class="{{ item.class_name() }}" type="button"{% if item.disabled %} disabled{% endif %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</button>
+    <button class="{{ item.class_name() }}" type="button"{% if item.disabled %} disabled{% endif %}{% for attr in item.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>{{ item.label }}{% match item.kbd %}{% when Some with (text) %}<span class="wf-kbd">{{ text }}</span>{% when None %}{% endmatch %}</button>
     {%- endmatch -%}
   {%- endif -%}
 {%- endfor -%}

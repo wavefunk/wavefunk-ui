@@ -1,7 +1,7 @@
 use askama::Template;
 use std::fmt::{self, Write as _};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct HtmlAttr<'a> {
     pub name: &'a str,
     pub value: &'a str,
@@ -42,6 +42,10 @@ impl<'a> HtmlAttr<'a> {
 
     pub const fn hx_trigger(value: &'a str) -> Self {
         Self::new("hx-trigger", value)
+    }
+
+    pub const fn hx_confirm(value: &'a str) -> Self {
+        Self::new("hx-confirm", value)
     }
 }
 
@@ -2799,6 +2803,7 @@ pub struct MenuItem<'a> {
     pub danger: bool,
     pub disabled: bool,
     pub kbd: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
 }
 
 impl<'a> MenuItem<'a> {
@@ -2810,6 +2815,7 @@ impl<'a> MenuItem<'a> {
             danger: false,
             disabled: false,
             kbd: None,
+            attrs: &[],
         }
     }
 
@@ -2829,6 +2835,7 @@ impl<'a> MenuItem<'a> {
             danger: false,
             disabled: false,
             kbd: None,
+            attrs: &[],
         }
     }
 
@@ -2844,6 +2851,11 @@ impl<'a> MenuItem<'a> {
 
     pub const fn with_kbd(mut self, kbd: &'a str) -> Self {
         self.kbd = Some(kbd);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
         self
     }
 

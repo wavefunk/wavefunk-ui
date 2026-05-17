@@ -17,6 +17,11 @@
       <nav class="wf-nav-list" id="app-nav">
         {{ nav_html|safe }}
       </nav>
+      {%- match profile -%}
+      {%- when Some with (profile) -%}
+      {{ profile }}
+      {%- when None -%}
+      {%- endmatch -%}
     </aside>
 
     <div class="wf-main">

@@ -20,7 +20,7 @@ use wavefunk_ui::components::{
     Testimonial, Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml,
     UserButton, Wordmark,
 };
-use wavefunk_ui::layouts::AppShell;
+use wavefunk_ui::layouts::{AppShell, SidebarProfile};
 
 #[derive(Clone, Copy, Debug)]
 struct SectionDef {
@@ -251,6 +251,12 @@ fn render_shell(section: SectionDef, query: &GalleryQuery) -> String {
     let shell = AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
         .with_nav(&nav)
         .with_actions(&actions)
+        .with_profile(
+            SidebarProfile::new()
+                .with_name("Wave Funk")
+                .with_email("gallery@wavefunk.test")
+                .with_avatar(Avatar::new("WF")),
+        )
         .with_mode(query.mode())
         .with_status("Gallery ready", "0.1.0");
     let shell = if query.default_density() {

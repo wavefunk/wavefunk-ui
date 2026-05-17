@@ -1022,6 +1022,17 @@
 }
 .wf-user.compact:hover { border-color: var(--hairline); background: transparent; }
 .wf-user.compact .wf-user-id { display: none; }
+.wf-sidebar-profile {
+  flex: 0 0 auto;
+  width: 100%;
+}
+.wf-sidebar-profile.wf-pop-anchor { display: block; }
+.wf-sidebar-profile .wf-sidebar-profile-menu {
+  left: var(--space-2);
+  right: var(--space-2);
+  min-width: 0;
+}
+.wf-sidebar-profile .wf-menu { min-width: 0; }
 
 /* ── Modal / Drawer ────────────────────────────────────────────────────── */
 /*  html:
