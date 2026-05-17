@@ -29,6 +29,8 @@ The crate embeds the runtime assets under the stable public mount path `/static/
 - `js/htmx.min.js`
 - `js/htmx-sse.js`
 
+This repository is the source of truth for Wave Funk runtime assets. CSS, fonts, and JavaScript changes should land in `static/wavefunk/` here and ship through the crate. Do not overwrite these files by importing from a separate design repository.
+
 No runtime `static/` directory is required in consuming binaries.
 
 With Axum, enable the `axum` feature and mount the optional router:

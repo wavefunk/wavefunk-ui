@@ -40,10 +40,10 @@
 .wf-gap-6 { gap: 24px; } .wf-gap-8 { gap: 32px; } .wf-gap-10 { gap: 40px; }
 
 /* Padding */
-.wf-p-0 { padding: 0; } .wf-p-1 { padding: 4px; } .wf-p-2 { padding: 8px; }
-.wf-p-3 { padding: 12px; } .wf-p-4 { padding: 16px; } .wf-p-5 { padding: 20px; }
-.wf-p-6 { padding: 24px; } .wf-p-8 { padding: 32px; }
-.wf-px-3 { padding-inline: 12px; } .wf-px-4 { padding-inline: 16px; } .wf-px-5 { padding-inline: 20px; } .wf-px-6 { padding-inline: 24px; }
+.wf-p-0 { padding: 0; --wf-panel-pad-x: 0px; } .wf-p-1 { padding: 4px; --wf-panel-pad-x: 4px; } .wf-p-2 { padding: 8px; --wf-panel-pad-x: 8px; }
+.wf-p-3 { padding: 12px; --wf-panel-pad-x: 12px; } .wf-p-4 { padding: 16px; --wf-panel-pad-x: 16px; } .wf-p-5 { padding: 20px; --wf-panel-pad-x: 20px; }
+.wf-p-6 { padding: 24px; --wf-panel-pad-x: 24px; } .wf-p-8 { padding: 32px; --wf-panel-pad-x: 32px; }
+.wf-px-3 { padding-inline: 12px; --wf-panel-pad-x: 12px; } .wf-px-4 { padding-inline: 16px; --wf-panel-pad-x: 16px; } .wf-px-5 { padding-inline: 20px; --wf-panel-pad-x: 20px; } .wf-px-6 { padding-inline: 24px; --wf-panel-pad-x: 24px; }
 .wf-py-2 { padding-block: 8px; } .wf-py-3 { padding-block: 12px; } .wf-py-4 { padding-block: 16px; } .wf-py-6 { padding-block: 24px; }
 
 /* Margin */

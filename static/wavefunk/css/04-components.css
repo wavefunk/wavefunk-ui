@@ -361,7 +361,72 @@
   color: var(--fg-muted); text-decoration: none;
 }
 .wf-panel-link:hover { color: var(--accent); }
-.wf-panel-body { padding: var(--space-4); min-width: 0; min-height: 0; }
+.wf-panel-body {
+  --wf-panel-pad-x: var(--space-4);
+  padding: var(--space-4);
+  min-width: 0; min-height: 0;
+}
+.wf-panel-bleed,
+.wf-panel-body > :is(
+  .wf-table,
+  .wf-tablewrap,
+  .wf-dl,
+  .wf-stepper,
+  .wf-accordion,
+  .wf-faq,
+  .wf-statusbar,
+  .wf-modeline,
+  .wf-minibuffer,
+  .wf-rank,
+  .wf-feed,
+  .wf-empty.bordered
+) {
+  margin-inline: calc(0px - var(--wf-panel-pad-x, var(--space-4)));
+  width: calc(100% + var(--wf-panel-pad-x, var(--space-4)) + var(--wf-panel-pad-x, var(--space-4)));
+  max-width: none;
+}
+.wf-panel-body > .wf-accordion .wf-accordion-trigger,
+.wf-panel-body > .wf-accordion .wf-accordion-body,
+.wf-panel-body > .wf-faq .wf-faq-row {
+  padding-inline: var(--wf-panel-pad-x, var(--space-4));
+}
+.wf-panel-body > .wf-table:not(.flush) th:first-child,
+.wf-panel-body > .wf-table:not(.flush) td:first-child,
+.wf-panel-body > .wf-tablewrap .wf-table:not(.flush) th:first-child,
+.wf-panel-body > .wf-tablewrap .wf-table:not(.flush) td:first-child {
+  padding-left: calc(20px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-table:not(.flush) th:last-child,
+.wf-panel-body > .wf-table:not(.flush) td:last-child,
+.wf-panel-body > .wf-tablewrap .wf-table:not(.flush) th:last-child,
+.wf-panel-body > .wf-tablewrap .wf-table:not(.flush) td:last-child {
+  padding-right: calc(20px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-tablewrap > .wf-filterbar,
+.wf-panel-body > .wf-tablewrap > .wf-bulkbar,
+.wf-panel-body > .wf-tablewrap > .wf-tablefoot {
+  padding-inline: calc(var(--space-5) + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-dl dt {
+  padding-left: calc(16px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-dl dd {
+  padding-right: calc(16px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-rank .wf-rank-row,
+.wf-panel-body > .wf-feed .wf-feed-row {
+  padding-inline: calc(16px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-statusbar,
+.wf-panel-body > .wf-minibuffer {
+  padding-inline: calc(12px + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-stepper > .wf-step:first-child {
+  padding-left: calc(var(--space-4) + var(--wf-panel-pad-x, var(--space-4)));
+}
+.wf-panel-body > .wf-stepper > .wf-step:last-child {
+  padding-right: calc(var(--space-4) + var(--wf-panel-pad-x, var(--space-4)));
+}
 .wf-panel.is-danger { border-color: var(--err); }
 .wf-panel.is-danger > .wf-panel-head { border-bottom-color: var(--err); }
 .wf-panel.is-danger > .wf-panel-head > .wf-panel-title { color: var(--err); }

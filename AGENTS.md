@@ -18,6 +18,12 @@ paths = [
 
 Do not commit local path overrides. Release and CI runs should resolve `wavefunk-ui` from crates.io.
 
+## Asset Source Of Truth
+
+This repo is canonical for the embedded Wave Funk runtime assets. Keep CSS, fonts, and JavaScript changes in `static/wavefunk/` here and publish them through this crate.
+
+Do not sync CSS or fonts from `../design`, and do not add recipes or scripts that copy design-repo assets over this crate's checked-in assets. If design work needs to change shared runtime styling, make the CSS change in this repo and let consumers pick it up by updating `wavefunk-ui`.
+
 ## Development Environment
 
 Use the Nix flake and direnv setup in this repo. The devshell is intentionally Rust-only:
