@@ -2871,6 +2871,7 @@ impl<'a> SidenavSection<'a> {
 pub struct Sidenav<'a> {
     pub sections: &'a [SidenavSection<'a>],
     pub attrs: &'a [HtmlAttr<'a>],
+    pub landmark: bool,
 }
 
 impl<'a> Sidenav<'a> {
@@ -2878,11 +2879,17 @@ impl<'a> Sidenav<'a> {
         Self {
             sections,
             attrs: &[],
+            landmark: true,
         }
     }
 
     pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
         self.attrs = attrs;
+        self
+    }
+
+    pub const fn embedded(mut self) -> Self {
+        self.landmark = false;
         self
     }
 }
@@ -6054,6 +6061,7 @@ mod tests {
         ];
         let side_sections = [SidenavSection::new("Manage <workspace>", &side_items)];
         let sidenav = Sidenav::new(&side_sections).render().unwrap();
+        let embedded_sidenav = Sidenav::new(&side_sections).embedded().render().unwrap();
 
         assert!(modeline.contains(r#"class="wf-modeline""#));
         assert!(modeline.contains(r#"class="wf-ml-seg wf-ml-chevron""#));
@@ -6074,6 +6082,9 @@ mod tests {
         assert!(sidenav.contains(r#"aria-disabled="true""#));
         assert!(!sidenav.contains("Manage <workspace>"));
         assert!(!sidenav.contains("Reports <beta>"));
+        assert!(sidenav.contains(r#"<nav class="wf-sidenav""#));
+        assert!(embedded_sidenav.contains(r#"<div class="wf-sidenav""#));
+        assert!(!embedded_sidenav.contains(r#"<nav class="wf-sidenav""#));
     }
 
     #[test]

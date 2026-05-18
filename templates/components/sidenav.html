@@ -1,4 +1,8 @@
+{% if landmark %}
 <nav class="wf-sidenav"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{% else %}
+<div class="wf-sidenav"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+{% endif %}
   {%- for section in sections %}
   <section class="wf-sidenav-section">
     <div class="wf-sidenav-heading">{{ section.label }}</div>
@@ -37,4 +41,8 @@
     </div>
   </section>
   {%- endfor %}
+{% if landmark %}
 </nav>
+{% else %}
+</div>
+{% endif %}

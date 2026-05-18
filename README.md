@@ -133,6 +133,7 @@ let switcher = ContextSwitcher::new("Workspace", "Production", &contexts);
 let nav_items = [SidenavItem::link("Overview", "/overview").active()];
 let nav_sections = [SidenavSection::new("Manage", &nav_items)];
 let nav = Sidenav::new(&nav_sections);
+let embedded_nav = Sidenav::new(&nav_sections).embedded();
 
 let modeline_segments = [ModelineSegment::chevron("WF"), ModelineSegment::buffer("dashboard")];
 let modeline = Modeline::new(&modeline_segments);

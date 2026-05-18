@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 - 2026-05-18
+
+- Added embedded `Sidenav` rendering for composing side navigation inside an existing navigation landmark.
+
 ## 0.1.3 - 2026-05-18
 
 - Added `AppShell` builders for sidebar nav labelling and body-level htmx boost control.
