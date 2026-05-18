@@ -106,6 +106,31 @@ Component rendering uses Askama's `Result` type. Propagate render errors from re
 
 Feature flags are additive. The default feature set stays framework-neutral; framework adapters such as Axum are enabled with feature flags.
 
+Dynamic table rows can use the owned table API, avoiding parallel storage just to satisfy borrowed cell lifetimes:
+
+```rust
+use askama::Template;
+use wavefunk_ui::components::{
+    DataTableHeader, OwnedDataTable, OwnedDataTableCell, OwnedDataTableRow, TrustedHtmlBuf,
+};
+
+let headers = [DataTableHeader::new("Name"), DataTableHeader::new("Actions").action_column()];
+let rows = records
+    .iter()
+    .map(|record| {
+        OwnedDataTableRow::new([
+            OwnedDataTableCell::strong(record.name.clone()),
+            OwnedDataTableCell::html(TrustedHtmlBuf::new(
+                r#"<button class="wf-icon-btn">Edit</button>"#,
+            )),
+        ])
+    })
+    .collect::<Vec<_>>();
+let html = OwnedDataTable::new(&headers, rows).render()?;
+```
+
+Plain owned table cells are escaped. Cells that contain markup require `TrustedHtmlBuf`, the owned counterpart to `TrustedHtml`.
+
 Marketing page CSS is part of the embedded asset bundle. Stable repeated primitives such as marketing sections, feature grids, step grids, pricing plans, and testimonials are exposed as typed components. Full landing-page composition, hero copy, and app-specific page structure should stay in consumer templates so this crate does not freeze one marketing layout into the semver surface.
 
 ## Migration-Ready Composition
@@ -172,7 +197,7 @@ Use Askama's `render`, `render_into`, or `write_into` methods for template outpu
 
 This crate optimizes `askama_derive` in the dev profile so local incremental builds stay practical as the component template set grows.
 
-Askama-derived templates already implement `FastWritable`. `TrustedHtml` implements it manually because component slots pass trusted markup through repeatedly; add manual implementations only for non-template wrapper types that show up in hot render paths and can write directly to `fmt::Write`.
+Askama-derived templates already implement `FastWritable`. `TrustedHtml` and `TrustedHtmlBuf` implement it manually because component slots pass trusted markup through repeatedly; add manual implementations only for non-template wrapper types that show up in hot render paths and can write directly to `fmt::Write`.
 
 Cached local rebuild check on 2026-05-16: after touching `src/components.rs`, `cargo check --all-features --example axum_gallery` completed in 1.10s real time. The gallery is the template-heavy smoke target for local path override iteration.
 

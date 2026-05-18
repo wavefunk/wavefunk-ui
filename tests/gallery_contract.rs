@@ -52,6 +52,8 @@ fn axum_gallery_exposes_real_htmx_backend_routes() {
         ".with_nav(TrustedHtml::new(&nav))",
         "FilterBar::new(TrustedHtml::new(&filter_input))",
         "RowSelect::new(\"workflow\", name, \"Select workflow\")",
+        "OwnedDataTable::new(&headers, rows)",
+        "OwnedDataTableCell::strong(name.to_owned())",
         "BulkActionBar::new(\"1 selected\", TrustedHtml::new(&bulk_delete))",
         "TableFooter::new(TrustedHtml::new(\"Showing 1-4 of 4\"))",
     ] {

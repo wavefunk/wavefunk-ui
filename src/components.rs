@@ -80,6 +80,58 @@ impl askama::FastWritable for TrustedHtml<'_> {
 
 impl askama::filters::HtmlSafe for TrustedHtml<'_> {}
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TrustedHtmlBuf {
+    html: String,
+}
+
+impl TrustedHtmlBuf {
+    pub fn new(html: impl Into<String>) -> Self {
+        Self { html: html.into() }
+    }
+
+    pub fn from_trusted(html: TrustedHtml<'_>) -> Self {
+        Self::new(html.as_str())
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.html
+    }
+}
+
+impl From<TrustedHtml<'_>> for TrustedHtmlBuf {
+    fn from(value: TrustedHtml<'_>) -> Self {
+        Self::from_trusted(value)
+    }
+}
+
+impl From<String> for TrustedHtmlBuf {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&str> for TrustedHtmlBuf {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for TrustedHtmlBuf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.html)
+    }
+}
+
+impl askama::FastWritable for TrustedHtmlBuf {
+    #[inline]
+    fn write_into(&self, dest: &mut dyn fmt::Write, _: &dyn askama::Values) -> askama::Result<()> {
+        Ok(dest.write_str(&self.html)?)
+    }
+}
+
+impl askama::filters::HtmlSafe for TrustedHtmlBuf {}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ButtonVariant {
     Default,
@@ -3399,6 +3451,153 @@ impl<'a> DataTable<'a> {
 
 impl<'a> askama::filters::HtmlSafe for DataTable<'a> {}
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OwnedDataTableCell {
+    pub text: String,
+    pub html: Option<TrustedHtmlBuf>,
+    pub numeric: bool,
+    pub strong: bool,
+    pub muted: bool,
+}
+
+impl OwnedDataTableCell {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self {
+            text: text.into(),
+            html: None,
+            numeric: false,
+            strong: false,
+            muted: false,
+        }
+    }
+
+    pub fn numeric(text: impl Into<String>) -> Self {
+        Self {
+            numeric: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub fn strong(text: impl Into<String>) -> Self {
+        Self {
+            strong: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub fn muted(text: impl Into<String>) -> Self {
+        Self {
+            muted: true,
+            ..Self::new(text)
+        }
+    }
+
+    pub fn html(html: impl Into<TrustedHtmlBuf>) -> Self {
+        Self {
+            text: String::new(),
+            html: Some(html.into()),
+            numeric: false,
+            strong: false,
+            muted: false,
+        }
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match (self.numeric, self.strong, self.muted) {
+            (false, false, false) => "",
+            (true, false, false) => "num",
+            (false, true, false) => "strong",
+            (false, false, true) => "muted",
+            (true, true, false) => "num strong",
+            (true, false, true) => "num muted",
+            (false, true, true) => "strong muted",
+            (true, true, true) => "num strong muted",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OwnedDataTableRow {
+    pub cells: Vec<OwnedDataTableCell>,
+    pub selected: bool,
+}
+
+impl OwnedDataTableRow {
+    pub fn new(cells: impl Into<Vec<OwnedDataTableCell>>) -> Self {
+        Self {
+            cells: cells.into(),
+            selected: false,
+        }
+    }
+
+    pub fn selected(mut self) -> Self {
+        self.selected = true;
+        self
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/owned_data_table.html")]
+pub struct OwnedDataTable<'a> {
+    pub headers: &'a [DataTableHeader<'a>],
+    pub rows: Vec<OwnedDataTableRow>,
+    pub flush: bool,
+    pub interactive: bool,
+    pub sticky: bool,
+    pub pin_last: bool,
+}
+
+impl<'a> OwnedDataTable<'a> {
+    pub fn new(
+        headers: &'a [DataTableHeader<'a>],
+        rows: impl Into<Vec<OwnedDataTableRow>>,
+    ) -> Self {
+        Self {
+            headers,
+            rows: rows.into(),
+            flush: false,
+            interactive: false,
+            sticky: false,
+            pin_last: false,
+        }
+    }
+
+    pub fn flush(mut self) -> Self {
+        self.flush = true;
+        self
+    }
+
+    pub fn interactive(mut self) -> Self {
+        self.interactive = true;
+        self
+    }
+
+    pub fn sticky(mut self) -> Self {
+        self.sticky = true;
+        self
+    }
+
+    pub fn pin_last(mut self) -> Self {
+        self.pin_last = true;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let flush = if self.flush { " flush" } else { "" };
+        let interactive = if self.interactive {
+            " is-interactive"
+        } else {
+            ""
+        };
+        let sticky = if self.sticky { " sticky" } else { "" };
+        let pin_last = if self.pin_last { " pin-last" } else { "" };
+        format!("wf-table{flush}{interactive}{sticky}{pin_last}")
+    }
+}
+
+impl askama::filters::HtmlSafe for OwnedDataTable<'_> {}
+
 #[derive(Debug, Template)]
 #[non_exhaustive]
 #[template(path = "components/filter_bar.html")]
@@ -5744,6 +5943,41 @@ mod tests {
         assert!(wrap_html.contains(r#"class="wf-filterbar""#));
         assert!(wrap_html.contains(r#"class="wf-bulkbar""#));
         assert!(wrap_html.contains(r#"class="wf-tablefoot""#));
+    }
+
+    #[test]
+    fn owned_data_table_accepts_dynamic_strings_and_trusted_html_cells() {
+        let headers = [
+            DataTableHeader::new("Name").sortable("name", SortDirection::Ascending),
+            DataTableHeader::numeric("Runs").with_width(TableColumnWidth::Small),
+            DataTableHeader::new("Actions").action_column(),
+        ];
+        let rows = [("Build <main>".to_owned(), 12)]
+            .into_iter()
+            .map(|(name, runs)| {
+                OwnedDataTableRow::new([
+                    OwnedDataTableCell::strong(name),
+                    OwnedDataTableCell::numeric(runs.to_string()),
+                    OwnedDataTableCell::html(TrustedHtmlBuf::new(
+                        r#"<button class="wf-icon-btn danger" type="button">Stop</button>"#,
+                    )),
+                ])
+                .selected()
+            })
+            .collect::<Vec<_>>();
+
+        let html = OwnedDataTable::new(&headers, rows)
+            .interactive()
+            .render()
+            .unwrap();
+
+        assert!(html.contains(r#"class="wf-table is-interactive""#));
+        assert!(html.contains(r#"class="is-selected" aria-selected="true""#));
+        assert!(html.contains(r#"class="wf-col-sm num""#));
+        assert!(html.contains(r#"class="wf-col-act""#));
+        assert!(!html.contains("Build <main>"));
+        assert!(html.contains("Build "));
+        assert!(html.contains(r#"<button class="wf-icon-btn danger" type="button">Stop</button>"#));
     }
 
     #[test]

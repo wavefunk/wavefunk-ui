@@ -11,20 +11,20 @@ use wavefunk_ui::components::{
     Accordion, AccordionItem, Alert, Avatar, AvatarGroup, AvatarSize, Badge, BreadcrumbItem,
     Breadcrumbs, BulkActionBar, Button, ButtonSize, ButtonVariant, Callout, Card, Checklist,
     ChecklistItem, CodeBlock, CodeGrid, ConfirmAction, ContextSwitcher, ContextSwitcherItem,
-    CopyableValue, CredentialStatusItem, CredentialStatusList, CurrentUpload, DataTable,
-    DataTableCell, DataTableHeader, DataTableRow, DefinitionItem, DefinitionList, Drawer, Dropzone,
-    EmptyState, Faq, FaqItem, FeatureGrid, FeatureItem, Feed, FeedRow, FeedbackKind, Field,
-    FieldState, FilterBar, Form, FormActions, FormPanel, FormSection, Framed, Grid, HtmlAttr,
-    InlineFormRow, Input, Kbd, MarkdownTextarea, MarketingSection, MarketingStep,
-    MarketingStepGrid, Menu, MenuItem, Meter, MeterColor, Minibuffer, MinibufferEcho,
-    MinibufferHistoryRow, Modal, Modeline, ModelineSegment, NavItem, NavSection, ObjectFieldset,
-    PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans, Progress,
-    RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost, RowSelect,
-    SecretValue, SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Sidenav,
-    SidenavItem, SidenavSection, Skeleton, SnippetTab, SnippetTabs, SortDirection, Spinner, Split,
-    SplitShell, Stat, StatRow, Statusbar, StepItem, Stepper, StrengthMeter, TabItem, Table,
-    TableCell, TableColumnWidth, TableFooter, TableHeader, TableRow, TableWrap, Tabs, Testimonial,
-    Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml, UserButton,
+    CopyableValue, CredentialStatusItem, CredentialStatusList, CurrentUpload, DataTableHeader,
+    DefinitionItem, DefinitionList, Drawer, Dropzone, EmptyState, Faq, FaqItem, FeatureGrid,
+    FeatureItem, Feed, FeedRow, FeedbackKind, Field, FieldState, FilterBar, Form, FormActions,
+    FormPanel, FormSection, Framed, Grid, HtmlAttr, InlineFormRow, Input, Kbd, MarkdownTextarea,
+    MarketingSection, MarketingStep, MarketingStepGrid, Menu, MenuItem, Meter, MeterColor,
+    Minibuffer, MinibufferEcho, MinibufferHistoryRow, Modal, Modeline, ModelineSegment, NavItem,
+    NavSection, ObjectFieldset, OwnedDataTable, OwnedDataTableCell, OwnedDataTableRow, PageHeader,
+    PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans, Progress, RankList, RankRow,
+    ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost, RowSelect, SecretValue,
+    SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Sidenav, SidenavItem,
+    SidenavSection, Skeleton, SnippetTab, SnippetTabs, SortDirection, Spinner, Split, SplitShell,
+    Stat, StatRow, Statusbar, StepItem, Stepper, StrengthMeter, TabItem, Table, TableCell,
+    TableColumnWidth, TableFooter, TableHeader, TableRow, TableWrap, Tabs, Testimonial, Textarea,
+    Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml, TrustedHtmlBuf, UserButton,
     Wordmark,
 };
 use wavefunk_ui::layouts::{AppShell, HtmxPartial, SidebarProfile};
@@ -667,31 +667,25 @@ fn workflow_table_fragment(query: &str) -> String {
         .copied()
         .filter(|(name, _, _)| needle.is_empty() || name.to_lowercase().contains(&needle))
         .collect();
-    let selectors: Vec<String> = matches
+    let rows = matches
         .iter()
-        .map(|(name, _, _)| {
-            render(
+        .copied()
+        .map(|(name, runs, _action)| {
+            let selector = render(
                 RowSelect::new("workflow", name, "Select workflow").checked(),
                 "workflow row select",
-            )
-        })
-        .collect();
-    let mut row_cells = Vec::new();
-    for ((name, runs, _action), selector) in matches.iter().zip(selectors.iter()) {
-        row_cells.push([
-            DataTableCell::html(TrustedHtml::new(selector)),
-            DataTableCell::strong(name),
-            DataTableCell::numeric(runs),
-            DataTableCell::html(TrustedHtml::new(
-                r#"<button class="wf-icon-btn danger" type="button" aria-label="Stop">&times;</button>"#,
-            )),
-        ]);
-    }
+            );
 
-    let mut rows = Vec::new();
-    for cells in &row_cells {
-        rows.push(DataTableRow::new(cells));
-    }
+            OwnedDataTableRow::new([
+                OwnedDataTableCell::html(TrustedHtmlBuf::new(selector)),
+                OwnedDataTableCell::strong(name.to_owned()),
+                OwnedDataTableCell::numeric(runs.to_owned()),
+                OwnedDataTableCell::html(TrustedHtmlBuf::new(
+                    r#"<button class="wf-icon-btn danger" type="button" aria-label="Stop">&times;</button>"#,
+                )),
+            ])
+        })
+        .collect::<Vec<_>>();
 
     let content = if rows.is_empty() {
         render(
@@ -702,7 +696,7 @@ fn workflow_table_fragment(query: &str) -> String {
         )
     } else {
         let table = render(
-            DataTable::new(&headers, &rows)
+            OwnedDataTable::new(&headers, rows)
                 .interactive()
                 .sticky()
                 .pin_last(),

@@ -1,5 +1,6 @@
 use rust_embed::RustEmbed;
 use std::borrow::Cow;
+use std::fmt::Write as _;
 
 pub const DEFAULT_BASE_PATH: &str = "/static/wavefunk";
 pub const STYLESHEET_PATH: &str = "css/wavefunk.css";
@@ -28,6 +29,11 @@ pub fn get(path: &str) -> Option<Asset> {
         bytes: file.data,
         content_type: content_type(path),
     })
+}
+
+pub fn etag(path: &str) -> Option<String> {
+    let path = normalize_path(path)?;
+    EmbeddedAssets::get(path).map(|file| format_etag(file.metadata.sha256_hash()))
 }
 
 pub fn iter() -> impl Iterator<Item = Cow<'static, str>> {
@@ -68,6 +74,16 @@ pub fn normalize_path(path: &str) -> Option<&str> {
     }
 
     Some(path)
+}
+
+fn format_etag(hash: [u8; 32]) -> String {
+    let mut etag = String::with_capacity(66);
+    etag.push('"');
+    for byte in hash {
+        write!(&mut etag, "{byte:02x}").expect("writing a hash to a string should not fail");
+    }
+    etag.push('"');
+    etag
 }
 
 #[cfg(test)]
@@ -118,6 +134,20 @@ mod tests {
     #[test]
     fn exposes_shared_cache_policy() {
         assert_eq!(CACHE_CONTROL, "public, max-age=0, must-revalidate");
+    }
+
+    #[test]
+    fn exposes_stable_entity_tags_for_runtime_assets() {
+        let stylesheet_etag = etag(STYLESHEET_PATH).expect("stylesheet should have an entity tag");
+
+        assert_eq!(stylesheet_etag.len(), 66);
+        assert!(stylesheet_etag.starts_with('"'));
+        assert!(stylesheet_etag.ends_with('"'));
+        assert_eq!(
+            stylesheet_etag,
+            etag(format!("{DEFAULT_BASE_PATH}/{STYLESHEET_PATH}").as_str()).unwrap()
+        );
+        assert!(etag("../Cargo.toml").is_none());
     }
 
     #[test]

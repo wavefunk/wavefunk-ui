@@ -1,0 +1,25 @@
+<table class="{{ self.class_name() }}">
+  <thead>
+    <tr>
+      {%- for header in headers -%}
+      <th{% if !header.class_name().is_empty() %} class="{{ header.class_name() }}"{% endif %}>
+        {%- match header.sort_key -%}
+        {%- when Some with (key) -%}
+        <button class="{% if header.sort_direction.is_some() %}wf-sort-h is-active{% else %}wf-sort-h{% endif %}" type="button" data-sort-key="{{ key }}">{{ header.label }}<span class="wf-sort-arrow">{{ header.sort_arrow() }}</span></button>
+        {%- when None -%}
+        {{ header.label }}
+        {%- endmatch -%}
+      </th>
+      {%- endfor -%}
+    </tr>
+  </thead>
+  <tbody>
+    {%- for row in rows -%}
+    <tr{% if row.selected %} class="is-selected" aria-selected="true"{% endif %}>
+      {%- for cell in row.cells -%}
+      <td{% if !cell.class_name().is_empty() %} class="{{ cell.class_name() }}"{% endif %}>{%- match cell.html -%}{%- when Some with (html) -%}{{ html }}{%- when None -%}{{ cell.text }}{%- endmatch -%}</td>
+      {%- endfor -%}
+    </tr>
+    {%- endfor -%}
+  </tbody>
+</table>
