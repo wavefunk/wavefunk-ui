@@ -94,6 +94,7 @@ pub struct AppShell<'a> {
     pub brand_href: Option<&'a str>,
     pub head_html: Option<TrustedHtml<'a>>,
     pub nav_html: &'a str,
+    pub nav_aria_label: &'a str,
     pub breadcrumbs_html: Option<TrustedHtml<'a>>,
     pub topbar_html: Option<TrustedHtml<'a>>,
     pub page_header_html: Option<TrustedHtml<'a>>,
@@ -106,6 +107,7 @@ pub struct AppShell<'a> {
     pub footer_html: Option<TrustedHtml<'a>>,
     pub include_htmx_sse: bool,
     pub scripts_html: Option<TrustedHtml<'a>>,
+    pub body_hx_boost: bool,
 }
 
 impl<'a> AppShell<'a> {
@@ -121,6 +123,7 @@ impl<'a> AppShell<'a> {
             brand_href: None,
             head_html: None,
             nav_html: "",
+            nav_aria_label: "primary navigation",
             breadcrumbs_html: None,
             topbar_html: None,
             page_header_html: None,
@@ -133,6 +136,7 @@ impl<'a> AppShell<'a> {
             footer_html: None,
             include_htmx_sse: false,
             scripts_html: None,
+            body_hx_boost: true,
         }
     }
 
@@ -189,6 +193,11 @@ impl<'a> AppShell<'a> {
         self
     }
 
+    pub const fn with_nav_aria_label(mut self, nav_aria_label: &'a str) -> Self {
+        self.nav_aria_label = nav_aria_label;
+        self
+    }
+
     pub const fn with_breadcrumbs(mut self, breadcrumbs_html: TrustedHtml<'a>) -> Self {
         self.breadcrumbs_html = Some(breadcrumbs_html);
         self
@@ -241,6 +250,15 @@ impl<'a> AppShell<'a> {
     pub const fn with_scripts(mut self, scripts_html: TrustedHtml<'a>) -> Self {
         self.scripts_html = Some(scripts_html);
         self
+    }
+
+    pub const fn with_body_hx_boost(mut self, body_hx_boost: bool) -> Self {
+        self.body_hx_boost = body_hx_boost;
+        self
+    }
+
+    pub const fn without_body_hx_boost(self) -> Self {
+        self.with_body_hx_boost(false)
     }
 
     pub fn stylesheet_link(&self) -> String {
@@ -331,6 +349,21 @@ mod tests {
         assert!(html.contains(r#"<button class="wf-btn">Save</button>"#));
         assert!(html.contains(">Ready<"));
         assert!(html.contains(">v0.1<"));
+        assert!(html.contains(r#"aria-label="primary navigation""#));
+        assert!(html.contains(r#"hx-boost="true""#));
+    }
+
+    #[test]
+    fn app_shell_can_label_nav_and_disable_body_hx_boost() {
+        let html = AppShell::new("Title", "Wave Funk", "<section>Content</section>")
+            .with_nav_aria_label("workspace navigation")
+            .without_body_hx_boost()
+            .render()
+            .unwrap();
+
+        assert!(html.contains(r#"aria-label="workspace navigation""#));
+        assert!(html.contains(r#"<body class="wf-app density-dense">"#));
+        assert!(!html.contains(r#"hx-boost="true""#));
     }
 
     #[test]

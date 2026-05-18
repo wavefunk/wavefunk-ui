@@ -21,7 +21,7 @@
   {%- when None -%}
   {%- endmatch -%}
 </head>
-<body class="wf-app {{ density_class }}" hx-boost="true">
+<body class="wf-app {{ density_class }}"{% if body_hx_boost %} hx-boost="true"{% endif %}>
   <div class="wf-shell">
     <aside class="wf-sidebar">
       <div class="wf-brand">
@@ -32,7 +32,7 @@
         <span class="wf-brand-name">{{ app_name }}</span>
         {%- endmatch -%}
       </div>
-      <nav class="wf-nav-list" id="app-nav">
+      <nav class="wf-nav-list" id="app-nav" aria-label="{{ nav_aria_label }}">
         {{ nav_html|safe }}
       </nav>
       {%- match profile -%}
