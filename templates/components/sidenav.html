@@ -1,0 +1,40 @@
+<nav class="wf-sidenav"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- for section in sections %}
+  <section class="wf-sidenav-section">
+    <div class="wf-sidenav-heading">{{ section.label }}</div>
+    <div class="wf-sidenav-list">
+      {%- for item in section.items %}
+      {%- if item.disabled %}
+      <span class="{{ item.class_name() }}" aria-disabled="true"{% for attr in item.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+        <span class="wf-sidenav-label">{{ item.label }}</span>
+        {%- match item.badge -%}
+        {%- when Some with (text) -%}
+        <span class="wf-sidenav-badge">{{ text }}</span>
+        {%- when None -%}
+        {%- endmatch -%}
+        {%- match item.coming_soon -%}
+        {%- when Some with (text) -%}
+        <span class="wf-sidenav-soon">{{ text }}</span>
+        {%- when None -%}
+        {%- endmatch -%}
+      </span>
+      {%- else %}
+      <a class="{{ item.class_name() }}" href="{{ item.href }}"{% if item.active %} aria-current="page"{% endif %}{% for attr in item.attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+        <span class="wf-sidenav-label">{{ item.label }}</span>
+        {%- match item.badge -%}
+        {%- when Some with (text) -%}
+        <span class="wf-sidenav-badge">{{ text }}</span>
+        {%- when None -%}
+        {%- endmatch -%}
+        {%- match item.coming_soon -%}
+        {%- when Some with (text) -%}
+        <span class="wf-sidenav-soon">{{ text }}</span>
+        {%- when None -%}
+        {%- endmatch -%}
+      </a>
+      {%- endif %}
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endfor %}
+</nav>

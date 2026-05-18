@@ -1,0 +1,13 @@
+<div class="wf-code-block"{% match language %}{% when Some with (lang) %} data-language="{{ lang }}"{% when None %}{% endmatch %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match label -%}
+  {%- when Some with (text) -%}
+  <div class="wf-code-block-label">{{ text }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <pre class="wf-code-block-pre"><code{% match copy_target_id %}{% when Some with (id) %} id="{{ id }}"{% when None %}{% endmatch %}{% match language %}{% when Some with (lang) %} data-language="{{ lang }}"{% when None %}{% endmatch %}>{{ code }}</code></pre>
+  {%- match copy_target_id -%}
+  {%- when Some with (id) -%}
+  <button class="wf-btn sm ghost" type="button" data-wf-copy="#{{ id }}">Copy</button>
+  {%- when None -%}
+  {%- endmatch -%}
+</div>

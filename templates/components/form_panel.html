@@ -1,0 +1,23 @@
+<section class="wf-form-panel"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <div class="wf-form-panel-head">
+    <div>
+      <h1 class="wf-form-panel-title">{{ title }}</h1>
+      {%- match subtitle -%}
+      {%- when Some with (text) -%}
+      <p class="wf-form-panel-subtitle">{{ text }}</p>
+      {%- when None -%}
+      {%- endmatch -%}
+    </div>
+    {%- match meta_html -%}
+    {%- when Some with (html) -%}
+    <div class="wf-form-panel-meta">{{ html }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </div>
+  <div class="wf-form-panel-body">{{ body_html }}</div>
+  {%- match actions_html -%}
+  {%- when Some with (html) -%}
+  <div class="wf-form-panel-actions">{{ html }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+</section>

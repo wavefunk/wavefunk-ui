@@ -1,0 +1,12 @@
+<div class="wf-code-grid"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match label -%}
+  {%- when Some with (text) -%}
+  <div class="wf-code-grid-label">{{ text }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-code-grid-list">
+    {%- for code in codes %}
+    <code class="wf-code-grid-item">{{ code }}</code>
+    {%- endfor %}
+  </div>
+</div>

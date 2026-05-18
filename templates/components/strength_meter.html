@@ -1,0 +1,9 @@
+<div class="{{ self.class_name() }}" role="progressbar" aria-valuemin="0" aria-valuenow="{{ self.bounded_value() }}" aria-valuemax="{{ max }}"{% if live %} aria-live="polite"{% endif %} style="{{ self.style() }}">
+  {%- match label -%}
+  {%- when Some with (text) -%}
+  <div class="wf-strength-label">{{ text }}</div>
+  {%- when None -%}
+  {%- endmatch -%}
+  <div class="wf-strength-track" aria-hidden="true"><div class="wf-strength-fill"></div></div>
+  <div class="wf-strength-text">{{ text }}</div>
+</div>

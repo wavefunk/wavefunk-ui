@@ -1,3 +1,4 @@
+use crate::assets;
 use askama::Template;
 use std::fmt::{self, Write as _};
 
@@ -1371,6 +1372,119 @@ impl<'a> askama::filters::HtmlSafe for Panel<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/form_panel.html")]
+pub struct FormPanel<'a> {
+    pub title: &'a str,
+    pub body_html: TrustedHtml<'a>,
+    pub subtitle: Option<&'a str>,
+    pub actions_html: Option<TrustedHtml<'a>>,
+    pub meta_html: Option<TrustedHtml<'a>>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> FormPanel<'a> {
+    pub const fn new(title: &'a str, body_html: TrustedHtml<'a>) -> Self {
+        Self {
+            title,
+            body_html,
+            subtitle: None,
+            actions_html: None,
+            meta_html: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_subtitle(mut self, subtitle: &'a str) -> Self {
+        self.subtitle = Some(subtitle);
+        self
+    }
+
+    pub const fn with_actions(mut self, actions_html: TrustedHtml<'a>) -> Self {
+        self.actions_html = Some(actions_html);
+        self
+    }
+
+    pub const fn with_meta(mut self, meta_html: TrustedHtml<'a>) -> Self {
+        self.meta_html = Some(meta_html);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for FormPanel<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/split_shell.html")]
+pub struct SplitShell<'a> {
+    pub content_html: TrustedHtml<'a>,
+    pub visual_html: Option<TrustedHtml<'a>>,
+    pub top_html: Option<TrustedHtml<'a>>,
+    pub footer_html: Option<TrustedHtml<'a>>,
+    pub mode: Option<&'a str>,
+    pub mode_locked: bool,
+    pub asset_base_path: &'a str,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> SplitShell<'a> {
+    pub const fn new(content_html: TrustedHtml<'a>) -> Self {
+        Self {
+            content_html,
+            visual_html: None,
+            top_html: None,
+            footer_html: None,
+            mode: None,
+            mode_locked: false,
+            asset_base_path: assets::DEFAULT_BASE_PATH,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_visual(mut self, visual_html: TrustedHtml<'a>) -> Self {
+        self.visual_html = Some(visual_html);
+        self
+    }
+
+    pub const fn with_top(mut self, top_html: TrustedHtml<'a>) -> Self {
+        self.top_html = Some(top_html);
+        self
+    }
+
+    pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_html = Some(footer_html);
+        self
+    }
+
+    pub const fn with_mode(mut self, mode: &'a str) -> Self {
+        self.mode = Some(mode);
+        self
+    }
+
+    pub const fn mode_locked(mut self) -> Self {
+        self.mode_locked = true;
+        self
+    }
+
+    pub const fn with_asset_base_path(mut self, asset_base_path: &'a str) -> Self {
+        self.asset_base_path = asset_base_path;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for SplitShell<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/settings_section.html")]
 pub struct SettingsSection<'a> {
     pub title: &'a str,
@@ -1499,6 +1613,207 @@ impl<'a> CopyableValue<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for CopyableValue<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/secret_value.html")]
+pub struct SecretValue<'a> {
+    pub label: &'a str,
+    pub id: &'a str,
+    pub value: &'a str,
+    pub button_label: &'a str,
+    pub revealed: bool,
+    pub copy_raw_value: bool,
+    pub warning: Option<&'a str>,
+    pub help_html: Option<TrustedHtml<'a>>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> SecretValue<'a> {
+    pub const fn new(label: &'a str, id: &'a str, value: &'a str) -> Self {
+        Self {
+            label,
+            id,
+            value,
+            button_label: "Copy",
+            revealed: false,
+            copy_raw_value: false,
+            warning: None,
+            help_html: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn revealed(mut self) -> Self {
+        self.revealed = true;
+        self
+    }
+
+    pub const fn copy_raw_value(mut self) -> Self {
+        self.copy_raw_value = true;
+        self
+    }
+
+    pub const fn with_button_label(mut self, button_label: &'a str) -> Self {
+        self.button_label = button_label;
+        self
+    }
+
+    pub const fn with_warning(mut self, warning: &'a str) -> Self {
+        self.warning = Some(warning);
+        self
+    }
+
+    pub const fn with_help(mut self, help_html: TrustedHtml<'a>) -> Self {
+        self.help_html = Some(help_html);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub const fn display_value(&self) -> &str {
+        if self.revealed {
+            self.value
+        } else {
+            "********"
+        }
+    }
+
+    pub fn value_class(&self) -> &'static str {
+        if self.revealed {
+            "wf-secret-code is-revealed"
+        } else {
+            "wf-secret-code is-masked"
+        }
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for SecretValue<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ChecklistItem<'a> {
+    pub label: &'a str,
+    pub description: Option<&'a str>,
+    pub kind: FeedbackKind,
+    pub status_label: Option<&'a str>,
+    pub icon_html: Option<TrustedHtml<'a>>,
+}
+
+impl<'a> ChecklistItem<'a> {
+    pub const fn new(label: &'a str, kind: FeedbackKind) -> Self {
+        Self {
+            label,
+            description: None,
+            kind,
+            status_label: None,
+            icon_html: None,
+        }
+    }
+
+    pub const fn info(label: &'a str) -> Self {
+        Self::new(label, FeedbackKind::Info)
+    }
+
+    pub const fn ok(label: &'a str) -> Self {
+        Self::new(label, FeedbackKind::Ok)
+    }
+
+    pub const fn warn(label: &'a str) -> Self {
+        Self::new(label, FeedbackKind::Warn)
+    }
+
+    pub const fn error(label: &'a str) -> Self {
+        Self::new(label, FeedbackKind::Error)
+    }
+
+    pub const fn with_description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub const fn with_status_label(mut self, status_label: &'a str) -> Self {
+        self.status_label = Some(status_label);
+        self
+    }
+
+    pub const fn with_icon(mut self, icon_html: TrustedHtml<'a>) -> Self {
+        self.icon_html = Some(icon_html);
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match self.kind {
+            FeedbackKind::Info => "wf-checklist-item is-info",
+            FeedbackKind::Ok => "wf-checklist-item is-ok",
+            FeedbackKind::Warn => "wf-checklist-item is-warn",
+            FeedbackKind::Error => "wf-checklist-item is-err",
+        }
+    }
+
+    pub fn status_text(&self) -> &'a str {
+        self.status_label.unwrap_or(match self.kind {
+            FeedbackKind::Info => "info",
+            FeedbackKind::Ok => "ok",
+            FeedbackKind::Warn => "warn",
+            FeedbackKind::Error => "error",
+        })
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/checklist.html")]
+pub struct Checklist<'a> {
+    pub items: &'a [ChecklistItem<'a>],
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Checklist<'a> {
+    pub const fn new(items: &'a [ChecklistItem<'a>]) -> Self {
+        Self { items, attrs: &[] }
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Checklist<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/code_grid.html")]
+pub struct CodeGrid<'a> {
+    pub codes: &'a [&'a str],
+    pub label: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> CodeGrid<'a> {
+    pub const fn new(codes: &'a [&'a str]) -> Self {
+        Self {
+            codes,
+            label: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_label(mut self, label: &'a str) -> Self {
+        self.label = Some(label);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for CodeGrid<'a> {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct CredentialStatusItem<'a> {
@@ -2369,6 +2684,210 @@ impl<'a> NavItem<'a> {
 }
 
 impl<'a> askama::filters::HtmlSafe for NavItem<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ContextSwitcherItem<'a> {
+    pub label: &'a str,
+    pub href: &'a str,
+    pub meta: Option<&'a str>,
+    pub badge_html: Option<TrustedHtml<'a>>,
+    pub active: bool,
+    pub disabled: bool,
+}
+
+impl<'a> ContextSwitcherItem<'a> {
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href,
+            meta: None,
+            badge_html: None,
+            active: false,
+            disabled: false,
+        }
+    }
+
+    pub const fn with_meta(mut self, meta: &'a str) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+
+    pub const fn with_badge(mut self, badge_html: TrustedHtml<'a>) -> Self {
+        self.badge_html = Some(badge_html);
+        self
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match (self.active, self.disabled) {
+            (true, true) => "wf-context-switcher-item is-active is-disabled",
+            (true, false) => "wf-context-switcher-item is-active",
+            (false, true) => "wf-context-switcher-item is-disabled",
+            (false, false) => "wf-context-switcher-item",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/context_switcher.html")]
+pub struct ContextSwitcher<'a> {
+    pub label: &'a str,
+    pub current: &'a str,
+    pub items: &'a [ContextSwitcherItem<'a>],
+    pub meta_html: Option<TrustedHtml<'a>>,
+    pub open: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> ContextSwitcher<'a> {
+    pub const fn new(
+        label: &'a str,
+        current: &'a str,
+        items: &'a [ContextSwitcherItem<'a>],
+    ) -> Self {
+        Self {
+            label,
+            current,
+            items,
+            meta_html: None,
+            open: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_meta(mut self, meta_html: TrustedHtml<'a>) -> Self {
+        self.meta_html = Some(meta_html);
+        self
+    }
+
+    pub const fn open(mut self) -> Self {
+        self.open = true;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ContextSwitcher<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct SidenavItem<'a> {
+    pub label: &'a str,
+    pub href: &'a str,
+    pub badge: Option<&'a str>,
+    pub coming_soon: Option<&'a str>,
+    pub active: bool,
+    pub muted: bool,
+    pub disabled: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> SidenavItem<'a> {
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            label,
+            href,
+            badge: None,
+            coming_soon: None,
+            active: false,
+            muted: false,
+            disabled: false,
+            attrs: &[],
+        }
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub const fn muted(mut self) -> Self {
+        self.muted = true;
+        self
+    }
+
+    pub const fn disabled(mut self) -> Self {
+        self.disabled = true;
+        self
+    }
+
+    pub const fn with_badge(mut self, badge: &'a str) -> Self {
+        self.badge = Some(badge);
+        self
+    }
+
+    pub const fn with_coming_soon(mut self, coming_soon: &'a str) -> Self {
+        self.coming_soon = Some(coming_soon);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match (self.active, self.muted, self.disabled) {
+            (true, true, true) => "wf-sidenav-item is-active is-muted is-disabled",
+            (true, true, false) => "wf-sidenav-item is-active is-muted",
+            (true, false, true) => "wf-sidenav-item is-active is-disabled",
+            (true, false, false) => "wf-sidenav-item is-active",
+            (false, true, true) => "wf-sidenav-item is-muted is-disabled",
+            (false, true, false) => "wf-sidenav-item is-muted",
+            (false, false, true) => "wf-sidenav-item is-disabled",
+            (false, false, false) => "wf-sidenav-item",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct SidenavSection<'a> {
+    pub label: &'a str,
+    pub items: &'a [SidenavItem<'a>],
+}
+
+impl<'a> SidenavSection<'a> {
+    pub const fn new(label: &'a str, items: &'a [SidenavItem<'a>]) -> Self {
+        Self { label, items }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/sidenav.html")]
+pub struct Sidenav<'a> {
+    pub sections: &'a [SidenavSection<'a>],
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Sidenav<'a> {
+    pub const fn new(sections: &'a [SidenavSection<'a>]) -> Self {
+        Self {
+            sections,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Sidenav<'a> {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
@@ -3882,6 +4401,190 @@ impl askama::filters::HtmlSafe for Meter {}
 
 #[derive(Debug, Template)]
 #[non_exhaustive]
+#[template(path = "components/code_block.html")]
+pub struct CodeBlock<'a> {
+    pub code: &'a str,
+    pub language: Option<&'a str>,
+    pub label: Option<&'a str>,
+    pub copy_target_id: Option<&'a str>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> CodeBlock<'a> {
+    pub const fn new(code: &'a str) -> Self {
+        Self {
+            code,
+            language: None,
+            label: None,
+            copy_target_id: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_language(mut self, language: &'a str) -> Self {
+        self.language = Some(language);
+        self
+    }
+
+    pub const fn with_label(mut self, label: &'a str) -> Self {
+        self.label = Some(label);
+        self
+    }
+
+    pub const fn with_copy_target(mut self, copy_target_id: &'a str) -> Self {
+        self.copy_target_id = Some(copy_target_id);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for CodeBlock<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct SnippetTab<'a> {
+    pub label: &'a str,
+    pub code: &'a str,
+    pub language: Option<&'a str>,
+    pub active: bool,
+}
+
+impl<'a> SnippetTab<'a> {
+    pub const fn new(label: &'a str, code: &'a str) -> Self {
+        Self {
+            label,
+            code,
+            language: None,
+            active: false,
+        }
+    }
+
+    pub const fn with_language(mut self, language: &'a str) -> Self {
+        self.language = Some(language);
+        self
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub fn tab_class(&self) -> &'static str {
+        if self.active {
+            "wf-snippet-tab is-active"
+        } else {
+            "wf-snippet-tab"
+        }
+    }
+
+    pub fn panel_class(&self) -> &'static str {
+        if self.active {
+            "wf-snippet-panel is-active"
+        } else {
+            "wf-snippet-panel"
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/snippet_tabs.html")]
+pub struct SnippetTabs<'a> {
+    pub id: &'a str,
+    pub tabs: &'a [SnippetTab<'a>],
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> SnippetTabs<'a> {
+    pub const fn new(id: &'a str, tabs: &'a [SnippetTab<'a>]) -> Self {
+        Self {
+            id,
+            tabs,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for SnippetTabs<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/strength_meter.html")]
+pub struct StrengthMeter<'a> {
+    pub value: u8,
+    pub max: u8,
+    pub text: &'a str,
+    pub label: Option<&'a str>,
+    pub kind: Option<FeedbackKind>,
+    pub live: bool,
+}
+
+impl<'a> StrengthMeter<'a> {
+    pub const fn new(value: u8, max: u8, text: &'a str) -> Self {
+        Self {
+            value,
+            max,
+            text,
+            label: None,
+            kind: None,
+            live: false,
+        }
+    }
+
+    pub const fn with_label(mut self, label: &'a str) -> Self {
+        self.label = Some(label);
+        self
+    }
+
+    pub const fn with_feedback(mut self, feedback: FeedbackKind) -> Self {
+        self.kind = Some(feedback);
+        self
+    }
+
+    pub const fn live(mut self) -> Self {
+        self.live = true;
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match self.kind {
+            Some(FeedbackKind::Info) => "wf-strength-meter is-info",
+            Some(FeedbackKind::Ok) => "wf-strength-meter is-ok",
+            Some(FeedbackKind::Warn) => "wf-strength-meter is-warn",
+            Some(FeedbackKind::Error) => "wf-strength-meter is-err",
+            None => "wf-strength-meter",
+        }
+    }
+
+    pub fn bounded_value(&self) -> u8 {
+        self.value.min(self.max)
+    }
+
+    pub fn percentage(&self) -> u8 {
+        if self.max == 0 {
+            0
+        } else {
+            ((u16::from(self.bounded_value()) * 100) / u16::from(self.max)) as u8
+        }
+    }
+
+    pub fn style(&self) -> String {
+        format!("--strength: {}%", self.percentage())
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for StrengthMeter<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
 #[template(path = "components/kbd.html")]
 pub struct Kbd<'a> {
     pub label: &'a str,
@@ -3978,6 +4681,237 @@ impl Default for Spinner {
 
 impl askama::filters::HtmlSafe for Spinner {}
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ModelineSegmentKind {
+    Default,
+    Chevron,
+    Flag,
+    Buffer,
+    Mode,
+    Position,
+    Progress,
+}
+
+impl ModelineSegmentKind {
+    fn class(self) -> &'static str {
+        match self {
+            Self::Default => "wf-ml-seg",
+            Self::Chevron => "wf-ml-seg wf-ml-chevron",
+            Self::Flag => "wf-ml-seg wf-ml-flag",
+            Self::Buffer => "wf-ml-seg wf-ml-buffer",
+            Self::Mode => "wf-ml-seg wf-ml-mode",
+            Self::Position => "wf-ml-seg wf-ml-pos",
+            Self::Progress => "wf-ml-seg wf-ml-progress",
+        }
+    }
+}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/modeline_segment.html")]
+pub struct ModelineSegment<'a> {
+    pub label: &'a str,
+    pub kind: ModelineSegmentKind,
+    pub state: Option<FeedbackKind>,
+    pub href: Option<&'a str>,
+    pub button: bool,
+    pub button_type: &'a str,
+    pub active: bool,
+    pub kbd: Option<&'a str>,
+    pub html: Option<TrustedHtml<'a>>,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> ModelineSegment<'a> {
+    pub const fn text(label: &'a str) -> Self {
+        Self {
+            label,
+            kind: ModelineSegmentKind::Default,
+            state: None,
+            href: None,
+            button: false,
+            button_type: "button",
+            active: false,
+            kbd: None,
+            html: None,
+            attrs: &[],
+        }
+    }
+
+    pub const fn chevron(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Chevron,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn flag(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Flag,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn buffer(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Buffer,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn mode(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Mode,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn position(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Position,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn progress(label: &'a str) -> Self {
+        Self {
+            kind: ModelineSegmentKind::Progress,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn link(label: &'a str, href: &'a str) -> Self {
+        Self {
+            href: Some(href),
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn button(label: &'a str) -> Self {
+        Self {
+            button: true,
+            ..Self::text(label)
+        }
+    }
+
+    pub const fn with_feedback(mut self, feedback: FeedbackKind) -> Self {
+        self.state = Some(feedback);
+        self
+    }
+
+    pub const fn active(mut self) -> Self {
+        self.active = true;
+        self
+    }
+
+    pub const fn with_kbd(mut self, kbd: &'a str) -> Self {
+        self.kbd = Some(kbd);
+        self
+    }
+
+    pub const fn with_html(mut self, html: TrustedHtml<'a>) -> Self {
+        self.html = Some(html);
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+
+    pub const fn with_button_type(mut self, button_type: &'a str) -> Self {
+        self.button_type = button_type;
+        self
+    }
+
+    pub fn class_name(&self) -> String {
+        let mut class = String::from(self.kind.class());
+        if self.href.is_some() || self.button || !self.attrs.is_empty() {
+            class.push_str(" is-interactive");
+        }
+        if self.active {
+            class.push_str(" is-active");
+        }
+        if let Some(kind) = self.state {
+            class.push_str(" is-");
+            class.push_str(kind.class());
+        }
+        class
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for ModelineSegment<'a> {}
+
+#[derive(Debug, Template)]
+#[non_exhaustive]
+#[template(path = "components/modeline.html")]
+pub struct Modeline<'a> {
+    pub left_segments: &'a [ModelineSegment<'a>],
+    pub right_segments: &'a [ModelineSegment<'a>],
+    pub fill: bool,
+    pub attrs: &'a [HtmlAttr<'a>],
+}
+
+impl<'a> Modeline<'a> {
+    pub const fn new(left_segments: &'a [ModelineSegment<'a>]) -> Self {
+        Self {
+            left_segments,
+            right_segments: &[],
+            fill: true,
+            attrs: &[],
+        }
+    }
+
+    pub const fn with_right(mut self, right_segments: &'a [ModelineSegment<'a>]) -> Self {
+        self.right_segments = right_segments;
+        self
+    }
+
+    pub const fn without_fill(mut self) -> Self {
+        self.fill = false;
+        self
+    }
+
+    pub const fn with_attrs(mut self, attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.attrs = attrs;
+        self
+    }
+}
+
+impl<'a> askama::filters::HtmlSafe for Modeline<'a> {}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MinibufferHistoryRow<'a> {
+    pub time: &'a str,
+    pub message: &'a str,
+    pub kind: Option<FeedbackKind>,
+}
+
+impl<'a> MinibufferHistoryRow<'a> {
+    pub const fn new(time: &'a str, message: &'a str) -> Self {
+        Self {
+            time,
+            message,
+            kind: None,
+        }
+    }
+
+    pub const fn with_feedback(mut self, feedback: FeedbackKind) -> Self {
+        self.kind = Some(feedback);
+        self
+    }
+
+    pub fn class_name(&self) -> &'static str {
+        match self.kind {
+            Some(FeedbackKind::Info) => "row is-info",
+            Some(FeedbackKind::Ok) => "row is-ok",
+            Some(FeedbackKind::Warn) => "row is-warn",
+            Some(FeedbackKind::Error) => "row is-err",
+            None => "row",
+        }
+    }
+}
+
 #[derive(Debug, Template)]
 #[non_exhaustive]
 #[template(path = "components/minibuffer.html")]
@@ -3986,6 +4920,7 @@ pub struct Minibuffer<'a> {
     pub message: Option<&'a str>,
     pub kind: Option<FeedbackKind>,
     pub time: Option<&'a str>,
+    pub history: &'a [MinibufferHistoryRow<'a>],
 }
 
 impl<'a> Minibuffer<'a> {
@@ -3995,6 +4930,7 @@ impl<'a> Minibuffer<'a> {
             message: None,
             kind: None,
             time: None,
+            history: &[],
         }
     }
 
@@ -4012,6 +4948,15 @@ impl<'a> Minibuffer<'a> {
     pub const fn with_time(mut self, time: &'a str) -> Self {
         self.time = Some(time);
         self
+    }
+
+    pub const fn with_history(mut self, history: &'a [MinibufferHistoryRow<'a>]) -> Self {
+        self.history = history;
+        self
+    }
+
+    pub const fn has_history(&self) -> bool {
+        !self.history.is_empty()
     }
 
     pub fn message_class(&self) -> String {
@@ -5025,6 +5970,187 @@ mod tests {
         assert!(confirm.contains(r#"class="wf-btn danger""#));
         assert!(section.contains(r#"class="wf-panel wf-settings-section is-danger""#));
         assert!(section.contains("Operational settings for this app."));
+    }
+
+    #[test]
+    fn split_shell_and_form_panel_render_generic_setup_surfaces() {
+        let actions = Button::primary("Continue").render().unwrap();
+        let panel = FormPanel::new(
+            "Setup <workspace>",
+            TrustedHtml::new(r#"<form class="wf-form">Fields</form>"#),
+        )
+        .with_subtitle("Use generic product copy <only>")
+        .with_actions(TrustedHtml::new(&actions))
+        .render()
+        .unwrap();
+        let attrs = [HtmlAttr::new("data-surface", "setup <flow>")];
+        let shell = SplitShell::new(TrustedHtml::new(&panel))
+            .with_top(TrustedHtml::new(
+                r#"<a class="wf-btn ghost" href="/">Back</a>"#,
+            ))
+            .with_visual(TrustedHtml::new(r#"<pre aria-label="preview">wave</pre>"#))
+            .with_footer(TrustedHtml::new(r#"<div class="wf-statusbar">Ready</div>"#))
+            .with_mode("light")
+            .mode_locked()
+            .with_asset_base_path("/assets/wavefunk")
+            .with_attrs(&attrs)
+            .render()
+            .unwrap();
+
+        assert!(panel.contains(r#"class="wf-form-panel""#));
+        assert!(!panel.contains("Setup <workspace>"));
+        assert!(!panel.contains("generic product copy <only>"));
+        assert!(panel.contains(r#"<form class="wf-form">Fields</form>"#));
+        assert!(shell.contains(r#"class="wf-split-shell""#));
+        assert!(shell.contains(r#"data-mode="light""#));
+        assert!(shell.contains(r#"data-mode-locked"#));
+        assert!(shell.contains(r#"data-wf-asset-base="/assets/wavefunk""#));
+        assert!(shell.contains(r#"data-surface="setup "#));
+        assert!(!shell.contains(r#"data-surface="setup <flow>""#));
+        assert!(shell.contains(r#"<pre aria-label="preview">wave</pre>"#));
+    }
+
+    #[test]
+    fn modeline_minibuffer_history_context_switcher_and_sidenav_are_generic() {
+        let toggle_attrs = [HtmlAttr::new("data-mode-toggle", "")];
+        let left = [
+            ModelineSegment::chevron("WF"),
+            ModelineSegment::buffer("workspace.rs"),
+            ModelineSegment::button("Mode").with_attrs(&toggle_attrs),
+        ];
+        let right = [
+            ModelineSegment::position("L12:C4"),
+            ModelineSegment::text("Ready").with_feedback(FeedbackKind::Ok),
+        ];
+        let modeline = Modeline::new(&left).with_right(&right).render().unwrap();
+        let history =
+            [MinibufferHistoryRow::new("09:41", "Saved <draft>").with_feedback(FeedbackKind::Ok)];
+        let minibuffer = Minibuffer::new()
+            .with_prompt("wf")
+            .with_message(FeedbackKind::Info, "Queued <job>")
+            .with_history(&history)
+            .render()
+            .unwrap();
+        let switcher_items = [
+            ContextSwitcherItem::link("Production <east>", "/contexts/prod")
+                .with_meta("3 apps")
+                .active(),
+            ContextSwitcherItem::link("Sandbox", "/contexts/sandbox")
+                .with_badge(TrustedHtml::new(r#"<span class="wf-tag">test</span>"#)),
+        ];
+        let switcher = ContextSwitcher::new("Workspace", "Production", &switcher_items)
+            .with_meta(TrustedHtml::new(r#"<span class="wf-tag ok">live</span>"#))
+            .open()
+            .render()
+            .unwrap();
+        let side_items = [
+            SidenavItem::link("Overview", "/overview").active(),
+            SidenavItem::link("Reports <beta>", "/reports")
+                .muted()
+                .with_badge("Soon"),
+            SidenavItem::link("Billing", "/billing")
+                .disabled()
+                .with_coming_soon("coming soon"),
+        ];
+        let side_sections = [SidenavSection::new("Manage <workspace>", &side_items)];
+        let sidenav = Sidenav::new(&side_sections).render().unwrap();
+
+        assert!(modeline.contains(r#"class="wf-modeline""#));
+        assert!(modeline.contains(r#"class="wf-ml-seg wf-ml-chevron""#));
+        assert!(modeline.contains(r#"data-mode-toggle="""#));
+        assert!(modeline.contains(r#"class="wf-ml-seg wf-ml-pos""#));
+        assert!(modeline.contains(r#"class="wf-ml-seg is-ok""#));
+        assert!(modeline.contains(r#"class="wf-ml-fill""#));
+        assert!(minibuffer.contains(r#"class="wf-minibuffer-history""#));
+        assert!(!minibuffer.contains("Queued <job>"));
+        assert!(!minibuffer.contains("Saved <draft>"));
+        assert!(switcher.contains(r#"class="wf-context-switcher""#));
+        assert!(switcher.contains(r#"<details class="wf-context-switcher" open>"#));
+        assert!(!switcher.contains("Production <east>"));
+        assert!(switcher.contains(r#"<span class="wf-tag">test</span>"#));
+        assert!(sidenav.contains(r#"class="wf-sidenav""#));
+        assert!(sidenav.contains(r#"class="wf-sidenav-item is-active""#));
+        assert!(sidenav.contains(r#"class="wf-sidenav-item is-muted""#));
+        assert!(sidenav.contains(r#"aria-disabled="true""#));
+        assert!(!sidenav.contains("Manage <workspace>"));
+        assert!(!sidenav.contains("Reports <beta>"));
+    }
+
+    #[test]
+    fn secret_checklist_code_grid_snippets_and_strength_meter_are_product_neutral() {
+        let secret = SecretValue::new("Recovery token", "recovery-token", "tok_<secret>")
+            .with_warning("Shown once <store it>")
+            .with_help(TrustedHtml::new(
+                "<strong>Store this value securely.</strong>",
+            ))
+            .render()
+            .unwrap();
+        let checklist_items = [
+            ChecklistItem::ok("DNS configured <edge>").with_description("Records verified."),
+            ChecklistItem::warn("Webhook retry").with_status_label("review"),
+        ];
+        let checklist = Checklist::new(&checklist_items).render().unwrap();
+        let codes = ["ABCD-EFGH", "IJKL<MNOP>"];
+        let code_grid = CodeGrid::new(&codes)
+            .with_label("One-time codes <backup>")
+            .render()
+            .unwrap();
+        let block = CodeBlock::new("cargo add wavefunk-ui <latest>")
+            .with_label("Install")
+            .with_language("shell")
+            .with_copy_target("install-command")
+            .render()
+            .unwrap();
+        let tabs = [
+            SnippetTab::new("Rust", r#"let value = "<typed>";"#)
+                .with_language("rust")
+                .active(),
+            SnippetTab::new("Shell", "cargo test").with_language("shell"),
+        ];
+        let snippets = SnippetTabs::new("quickstart", &tabs).render().unwrap();
+        let strength = StrengthMeter::new(3, 4, "Strong <enough>")
+            .with_label("Key strength")
+            .with_feedback(FeedbackKind::Ok)
+            .live()
+            .render()
+            .unwrap();
+
+        assert!(secret.contains(r#"class="wf-secret-value""#));
+        assert!(secret.contains(r##"data-wf-copy="#recovery-token""##));
+        assert!(!secret.contains("data-wf-copy-value"));
+        assert!(secret.contains("********"));
+        assert!(!secret.contains("tok_<secret>"));
+        assert!(!secret.contains("Shown once <store it>"));
+        assert!(secret.contains("<strong>Store this value securely.</strong>"));
+        let copyable_masked = SecretValue::new("Raw token", "raw-token", "raw-secret")
+            .copy_raw_value()
+            .render()
+            .unwrap();
+        assert!(copyable_masked.contains(r#"data-wf-copy-value="raw-secret""#));
+        assert!(checklist.contains(r#"class="wf-checklist""#));
+        assert!(checklist.contains(r#"class="wf-checklist-item is-ok""#));
+        assert!(checklist.contains(r#"class="wf-checklist-item is-warn""#));
+        assert!(!checklist.contains("DNS configured <edge>"));
+        assert!(code_grid.contains(r#"class="wf-code-grid""#));
+        assert!(!code_grid.contains("IJKL<MNOP>"));
+        assert!(!code_grid.contains("One-time codes <backup>"));
+        assert!(block.contains(r#"class="wf-code-block""#));
+        assert!(block.contains(r#"data-language="shell""#));
+        assert!(block.contains(r##"data-wf-copy="#install-command""##));
+        assert!(!block.contains("wavefunk-ui <latest>"));
+        assert!(snippets.contains(r#"class="wf-snippet-tabs""#));
+        assert!(snippets.contains(r#"role="tablist""#));
+        assert!(snippets.contains(r##"data-wf-snippet-tab="#quickstart-panel-1""##));
+        assert!(snippets.contains(r#"aria-controls="quickstart-panel-1""#));
+        assert!(snippets.contains(r#"id="quickstart-panel-2""#));
+        assert!(snippets.contains(r#"hidden"#));
+        assert!(!snippets.contains(r#"let value = "<typed>";"#));
+        assert!(strength.contains(r#"class="wf-strength-meter is-ok""#));
+        assert!(strength.contains(r#"role="progressbar""#));
+        assert!(strength.contains(r#"aria-valuenow="3""#));
+        assert!(strength.contains(r#"aria-valuemax="4""#));
+        assert!(strength.contains(r#"style="--strength: 75%""#));
+        assert!(!strength.contains("Strong <enough>"));
     }
 
     #[test]

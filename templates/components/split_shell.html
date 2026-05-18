@@ -1,0 +1,20 @@
+<div class="wf-split-shell"{% match mode %}{% when Some with (value) %} data-mode="{{ value }}"{% when None %}{% endmatch %}{% if mode_locked %} data-mode-locked{% endif %} data-wf-asset-base="{{ asset_base_path }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match visual_html -%}
+  {%- when Some with (html) -%}
+  <aside class="wf-split-shell-visual">{{ html }}</aside>
+  {%- when None -%}
+  {%- endmatch -%}
+  <section class="wf-split-shell-content">
+    {%- match top_html -%}
+    {%- when Some with (html) -%}
+    <div class="wf-split-shell-top">{{ html }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+    <div class="wf-split-shell-main">{{ content_html }}</div>
+    {%- match footer_html -%}
+    {%- when Some with (html) -%}
+    <div class="wf-split-shell-footer">{{ html }}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+  </section>
+</div>

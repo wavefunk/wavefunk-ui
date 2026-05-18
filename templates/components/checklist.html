@@ -1,0 +1,23 @@
+<ul class="wf-checklist"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- for item in items %}
+  <li class="{{ item.class_name() }}">
+    <span class="wf-checklist-icon" aria-hidden="true">
+      {%- match item.icon_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
+      <span class="wf-dot"></span>
+      {%- endmatch -%}
+    </span>
+    <span class="wf-checklist-copy">
+      <span class="wf-checklist-label">{{ item.label }}</span>
+      {%- match item.description -%}
+      {%- when Some with (text) -%}
+      <span class="wf-checklist-description">{{ text }}</span>
+      {%- when None -%}
+      {%- endmatch -%}
+    </span>
+    <span class="wf-checklist-status">{{ item.status_text() }}</span>
+  </li>
+  {%- endfor %}
+</ul>

@@ -1,0 +1,19 @@
+{%- match href -%}
+{%- when Some with (url) -%}
+<a class="{{ self.class_name() }}" href="{{ url }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match html -%}{%- when Some with (slot) -%}{{ slot }}{%- when None -%}{{ label }}{%- endmatch -%}
+  {%- match kbd -%}{%- when Some with (text) -%}<kbd class="wf-kbd">{{ text }}</kbd>{%- when None -%}{%- endmatch -%}
+</a>
+{%- when None -%}
+{%- if button -%}
+<button class="{{ self.class_name() }}" type="{{ button_type }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match html -%}{%- when Some with (slot) -%}{{ slot }}{%- when None -%}{{ label }}{%- endmatch -%}
+  {%- match kbd -%}{%- when Some with (text) -%}<kbd class="wf-kbd">{{ text }}</kbd>{%- when None -%}{%- endmatch -%}
+</button>
+{%- else -%}
+<span class="{{ self.class_name() }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- match html -%}{%- when Some with (slot) -%}{{ slot }}{%- when None -%}{{ label }}{%- endmatch -%}
+  {%- match kbd -%}{%- when Some with (text) -%}<kbd class="wf-kbd">{{ text }}</kbd>{%- when None -%}{%- endmatch -%}
+</span>
+{%- endif -%}
+{%- endmatch -%}

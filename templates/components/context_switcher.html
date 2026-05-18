@@ -1,0 +1,44 @@
+<details class="wf-context-switcher"{% if open %} open{% endif %}{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <summary class="wf-context-switcher-summary">
+    <span class="wf-context-switcher-label">{{ label }}</span>
+    <span class="wf-context-switcher-current">{{ current }}</span>
+    {%- match meta_html -%}
+    {%- when Some with (html) -%}
+    <span class="wf-context-switcher-meta">{{ html }}</span>
+    {%- when None -%}
+    {%- endmatch -%}
+  </summary>
+  <div class="wf-context-switcher-menu">
+    {%- for item in items %}
+    {%- if item.disabled %}
+    <span class="{{ item.class_name() }}" aria-disabled="true">
+      <span class="wf-context-switcher-item-label">{{ item.label }}</span>
+      {%- match item.meta -%}
+      {%- when Some with (text) -%}
+      <span class="wf-context-switcher-item-meta">{{ text }}</span>
+      {%- when None -%}
+      {%- endmatch -%}
+      {%- match item.badge_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
+      {%- endmatch -%}
+    </span>
+    {%- else %}
+    <a class="{{ item.class_name() }}" href="{{ item.href }}"{% if item.active %} aria-current="page"{% endif %}>
+      <span class="wf-context-switcher-item-label">{{ item.label }}</span>
+      {%- match item.meta -%}
+      {%- when Some with (text) -%}
+      <span class="wf-context-switcher-item-meta">{{ text }}</span>
+      {%- when None -%}
+      {%- endmatch -%}
+      {%- match item.badge_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
+      {%- endmatch -%}
+    </a>
+    {%- endif %}
+    {%- endfor %}
+  </div>
+</details>

@@ -87,6 +87,20 @@ fn gallery_example_exposes_migration_readiness_components() {
     let source = include_str!("../examples/axum_gallery.rs");
 
     for primitive in [
+        "SplitShell::new(",
+        "FormPanel::new(",
+        "Modeline::new(",
+        "ModelineSegment::",
+        "ContextSwitcher::new(",
+        "Sidenav::new(",
+        "SidenavSection::new(",
+        "SidenavItem::link(",
+        "SecretValue::new(",
+        "Checklist::new(",
+        "CodeGrid::new(",
+        "CodeBlock::new(",
+        "SnippetTabs::new(",
+        "StrengthMeter::new(",
         "SettingsSection::new(",
         "MinibufferEcho::info(",
         "InlineFormRow::new(",

@@ -108,6 +108,44 @@ Feature flags are additive. The default feature set stays framework-neutral; fra
 
 Marketing page CSS is part of the embedded asset bundle. Stable repeated primitives such as marketing sections, feature grids, step grids, pricing plans, and testimonials are exposed as typed components. Full landing-page composition, hero copy, and app-specific page structure should stay in consumer templates so this crate does not freeze one marketing layout into the semver surface.
 
+## Migration-Ready Composition
+
+Product apps should compose generic primitives rather than asking this crate for product-specific pages. The crate includes reusable shell, navigation, status, sensitive-value, checklist, snippet, and meter building blocks:
+
+```rust
+use askama::Template;
+use wavefunk_ui::components::{
+    Checklist, ChecklistItem, CodeBlock, ContextSwitcher, ContextSwitcherItem,
+    FormPanel, Modeline, ModelineSegment, SecretValue, Sidenav, SidenavItem,
+    SidenavSection, SplitShell, StrengthMeter, TrustedHtml,
+};
+
+let form = FormPanel::new(
+    "Setup surface",
+    TrustedHtml::new(r#"<form class="wf-form">...</form>"#),
+);
+let split = SplitShell::new(TrustedHtml::new(&form.render()?))
+    .with_visual(TrustedHtml::new("<p>Preview slot</p>"))
+    .with_mode("dark");
+
+let contexts = [ContextSwitcherItem::link("Production", "/workspaces/prod").active()];
+let switcher = ContextSwitcher::new("Workspace", "Production", &contexts);
+let nav_items = [SidenavItem::link("Overview", "/overview").active()];
+let nav_sections = [SidenavSection::new("Manage", &nav_items)];
+let nav = Sidenav::new(&nav_sections);
+
+let modeline_segments = [ModelineSegment::chevron("WF"), ModelineSegment::buffer("dashboard")];
+let modeline = Modeline::new(&modeline_segments);
+
+let secret = SecretValue::new("Generated value", "value", "wf_live_example");
+let checklist_items = [ChecklistItem::ok("Domain verified")];
+let checklist = Checklist::new(&checklist_items);
+let code = CodeBlock::new("cargo test").with_language("shell");
+let strength = StrengthMeter::new(3, 4, "Strong");
+```
+
+Consumers still own page semantics: routes, domain behavior, lifecycle rules, copy, scoring algorithms, and product-specific page structs stay outside `wavefunk-ui`.
+
 ## Interaction Primitives
 
 The shared JavaScript in `wavefunk.js` is intentionally generic:

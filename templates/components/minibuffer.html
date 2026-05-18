@@ -6,4 +6,14 @@
   <span class="wf-minibuffer-time">{{ text }}</span>
   {%- when None -%}
   {%- endmatch -%}
+  {%- if self.has_history() -%}
+  <div class="wf-minibuffer-history">
+    {%- for row in history %}
+    <div class="{{ row.class_name() }}">
+      <span class="time">{{ row.time }}</span>
+      <span class="msg">{{ row.message }}</span>
+    </div>
+    {%- endfor %}
+  </div>
+  {%- endif -%}
 </div>

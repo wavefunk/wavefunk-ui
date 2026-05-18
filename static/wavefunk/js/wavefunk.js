@@ -13,6 +13,13 @@ document.addEventListener('click', event => {
     return;
   }
 
+  const snippetTab = event.target.closest('[data-wf-snippet-tab]');
+  if (snippetTab) {
+    event.preventDefault();
+    wfActivateSnippetTab(snippetTab);
+    return;
+  }
+
   const trigger = event.target.closest('[data-popover-toggle]');
   if (trigger) {
     const anchor = trigger.closest('.wf-pop-anchor');
@@ -52,6 +59,17 @@ function wfFallbackCopyText(text) {
 }
 
 function wfCopyValue(trigger) {
+  const explicit = trigger.getAttribute('data-wf-copy-value');
+  if (explicit) {
+    wfCopyText(explicit.trim()).then(() => {
+      trigger.setAttribute('data-wf-copy-state', 'ok');
+      trigger.dispatchEvent(new CustomEvent('wfCopy', { bubbles: true, detail: { text: explicit } }));
+    }).catch(() => {
+      trigger.setAttribute('data-wf-copy-state', 'error');
+    });
+    return;
+  }
+
   const selector = trigger.getAttribute('data-wf-copy');
   const source = selector ? document.querySelector(selector) : null;
   const text = source && 'value' in source ? source.value : source ? source.textContent : '';
@@ -62,6 +80,26 @@ function wfCopyValue(trigger) {
     trigger.dispatchEvent(new CustomEvent('wfCopy', { bubbles: true, detail: { text } }));
   }).catch(() => {
     trigger.setAttribute('data-wf-copy-state', 'error');
+  });
+}
+
+function wfActivateSnippetTab(trigger) {
+  const root = trigger.closest('.wf-snippet-tabs');
+  const selector = trigger.getAttribute('data-wf-snippet-tab');
+  const panel = root && selector ? root.querySelector(selector) : null;
+  if (!root || !panel) return;
+
+  root.querySelectorAll('[data-wf-snippet-tab]').forEach(tab => {
+    const selected = tab === trigger;
+    tab.classList.toggle('is-active', selected);
+    tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+    tab.tabIndex = selected ? 0 : -1;
+  });
+
+  root.querySelectorAll('.wf-snippet-panel').forEach(item => {
+    const selected = item === panel;
+    item.classList.toggle('is-active', selected);
+    item.hidden = !selected;
   });
 }
 

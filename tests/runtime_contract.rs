@@ -6,6 +6,8 @@ fn shared_runtime_exposes_migration_helpers_by_data_attribute() {
         "data-wf-copy",
         "navigator.clipboard.writeText",
         "wfFallbackCopyText",
+        "data-wf-snippet-tab",
+        "wfActivateSnippetTab",
         "data-upload-zone",
         "data-upload-input",
         "data-wf-submit-spinner",

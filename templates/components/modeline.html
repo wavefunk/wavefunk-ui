@@ -1,0 +1,11 @@
+<div class="wf-modeline"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  {%- for segment in left_segments -%}
+  {{ segment }}
+  {%- endfor -%}
+  {%- if fill -%}
+  <span class="wf-ml-fill" aria-hidden="true"></span>
+  {%- endif -%}
+  {%- for segment in right_segments -%}
+  {{ segment }}
+  {%- endfor -%}
+</div>

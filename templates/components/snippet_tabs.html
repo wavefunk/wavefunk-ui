@@ -1,0 +1,14 @@
+<div class="wf-snippet-tabs" id="{{ id }}"{% for attr in attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
+  <div class="wf-snippet-tablist" role="tablist">
+    {%- for tab in tabs %}
+    <button id="{{ id }}-tab-{{ loop.index }}" class="{{ tab.tab_class() }}" type="button" role="tab" aria-selected="{% if tab.active %}true{% else %}false{% endif %}" aria-controls="{{ id }}-panel-{{ loop.index }}" data-wf-snippet-tab="#{{ id }}-panel-{{ loop.index }}"{% if !tab.active %} tabindex="-1"{% endif %}>{{ tab.label }}</button>
+    {%- endfor %}
+  </div>
+  <div class="wf-snippet-panels">
+    {%- for tab in tabs %}
+    <section id="{{ id }}-panel-{{ loop.index }}" class="{{ tab.panel_class() }}" role="tabpanel" aria-labelledby="{{ id }}-tab-{{ loop.index }}"{% if !tab.active %} hidden{% endif %}>
+      <pre class="wf-code-block-pre"><code{% match tab.language %}{% when Some with (lang) %} data-language="{{ lang }}"{% when None %}{% endmatch %}>{{ tab.code }}</code></pre>
+    </section>
+    {%- endfor %}
+  </div>
+</div>

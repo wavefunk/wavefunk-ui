@@ -9,17 +9,20 @@ use axum::{
 use serde::Deserialize;
 use wavefunk_ui::components::{
     Accordion, AccordionItem, Alert, Avatar, AvatarGroup, AvatarSize, Badge, BreadcrumbItem,
-    Breadcrumbs, BulkActionBar, Button, ButtonSize, ButtonVariant, Callout, Card, ConfirmAction,
+    Breadcrumbs, BulkActionBar, Button, ButtonSize, ButtonVariant, Callout, Card, Checklist,
+    ChecklistItem, CodeBlock, CodeGrid, ConfirmAction, ContextSwitcher, ContextSwitcherItem,
     CopyableValue, CredentialStatusItem, CredentialStatusList, CurrentUpload, DataTable,
     DataTableCell, DataTableHeader, DataTableRow, DefinitionItem, DefinitionList, Drawer, Dropzone,
     EmptyState, Faq, FaqItem, FeatureGrid, FeatureItem, Feed, FeedRow, FeedbackKind, Field,
-    FieldState, FilterBar, Form, FormActions, FormSection, Framed, Grid, HtmlAttr, InlineFormRow,
-    Input, Kbd, MarkdownTextarea, MarketingSection, MarketingStep, MarketingStepGrid, Menu,
-    MenuItem, Meter, MeterColor, Minibuffer, MinibufferEcho, Modal, NavItem, NavSection,
-    ObjectFieldset, PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans,
-    Progress, RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost,
-    RowSelect, SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Skeleton,
-    SortDirection, Spinner, Split, Stat, StatRow, Statusbar, StepItem, Stepper, TabItem, Table,
+    FieldState, FilterBar, Form, FormActions, FormPanel, FormSection, Framed, Grid, HtmlAttr,
+    InlineFormRow, Input, Kbd, MarkdownTextarea, MarketingSection, MarketingStep,
+    MarketingStepGrid, Menu, MenuItem, Meter, MeterColor, Minibuffer, MinibufferEcho,
+    MinibufferHistoryRow, Modal, Modeline, ModelineSegment, NavItem, NavSection, ObjectFieldset,
+    PageHeader, PageLink, Pagination, Panel, Popover, PricingPlan, PricingPlans, Progress,
+    RankList, RankRow, ReferenceSelect, RepeatableArray, RepeatableItem, RichTextHost, RowSelect,
+    SecretValue, SegmentOption, SegmentedControl, Select, SelectOption, SettingsSection, Sidenav,
+    SidenavItem, SidenavSection, Skeleton, SnippetTab, SnippetTabs, SortDirection, Spinner, Split,
+    SplitShell, Stat, StatRow, Statusbar, StepItem, Stepper, StrengthMeter, TabItem, Table,
     TableCell, TableColumnWidth, TableFooter, TableHeader, TableRow, TableWrap, Tabs, Testimonial,
     Textarea, Timeline, TimelineItem, Topbar, TreeItem, TreeView, TrustedHtml, UserButton,
     Wordmark,
@@ -247,6 +250,7 @@ async fn echo() -> (HeaderMap, &'static str) {
 fn render_shell(section: SectionDef, query: &GalleryQuery) -> String {
     let content = render_gallery_main(section, query);
     let nav = gallery_nav(section.id);
+    let html_attrs = [HtmlAttr::new("data-gallery-shell", "true")];
     let actions = render(
         GalleryActions {
             mode: query.mode(),
@@ -267,12 +271,39 @@ fn render_shell(section: SectionDef, query: &GalleryQuery) -> String {
         ),
         "shell topbar",
     );
+    let mode_attrs = [HtmlAttr::new("data-mode-toggle", "")];
+    let modeline_left = [
+        ModelineSegment::chevron("WFUI"),
+        ModelineSegment::buffer(section.id),
+        ModelineSegment::button(query.mode()).with_attrs(&mode_attrs),
+    ];
+    let modeline_right = [
+        ModelineSegment::position("L1:C1"),
+        ModelineSegment::text("Ready").with_feedback(FeedbackKind::Ok),
+    ];
+    let modeline = render(
+        Modeline::new(&modeline_left).with_right(&modeline_right),
+        "gallery modeline",
+    );
+    let history = [MinibufferHistoryRow::new("09:41", "Loaded gallery section")
+        .with_feedback(FeedbackKind::Info)];
+    let minibuffer = render(
+        Minibuffer::new()
+            .with_prompt("gallery")
+            .with_message(FeedbackKind::Info, "Use htmx links to swap sections.")
+            .with_history(&history),
+        "gallery minibuffer",
+    );
+    let footer = format!("{modeline}{minibuffer}");
     let shell = AppShell::new("wavefunk-ui gallery", "WAVEFUNK UI", &content)
         .with_head(TrustedHtml::new(
             r#"<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='black'/%3E%3C/svg%3E"><meta name="theme-color" content="oklch(0.58 0.16 250)">"#,
         ))
+        .with_html_attrs(&html_attrs)
+        .with_brand_href("/")
         .with_nav(&nav)
         .with_topbar(TrustedHtml::new(&shell_topbar))
+        .with_footer(TrustedHtml::new(&footer))
         .with_htmx_sse()
         .with_scripts(TrustedHtml::new(
             r#"<script id="gallery-shell-config">window.wavefunkGalleryShell = true;</script>"#,
@@ -915,10 +946,105 @@ fn migration_section() -> String {
         Panel::new("Shell extension contract", TrustedHtml::new(&shell_notes)),
         "migration shell panel",
     );
+    let split_shell = migration_split_shell_section();
+    let navigation = migration_navigation_section();
     let settings = migration_settings_section();
+    let sensitive_values = migration_sensitive_value_section();
+    let snippets = migration_snippet_section();
     let generated = migration_generated_form_section();
 
-    format!(r#"{shell_panel}{settings}{generated}"#)
+    format!(
+        r#"{shell_panel}{split_shell}{navigation}{settings}{sensitive_values}{snippets}{generated}"#
+    )
+}
+
+fn migration_split_shell_section() -> String {
+    let name = render(
+        Input::new("project_name").with_placeholder("Project name"),
+        "setup project input",
+    );
+    let name_field = render(
+        Field::new("Project name", TrustedHtml::new(&name))
+            .with_hint("Consumer applications provide the field names and validation."),
+        "setup project field",
+    );
+    let continue_button = render(
+        Button::primary("Continue").with_button_type("submit"),
+        "setup continue",
+    );
+    let form = render(
+        Form::new(TrustedHtml::new(&name_field)).with_action("/components/migration/setup"),
+        "setup form",
+    );
+    let form_panel = render(
+        FormPanel::new("Setup surface", TrustedHtml::new(&form))
+            .with_subtitle("Split shells, form panels, and actions remain generic.")
+            .with_actions(TrustedHtml::new(&continue_button)),
+        "form panel",
+    );
+    let visual = render(
+        Callout::new(
+            FeedbackKind::Info,
+            TrustedHtml::new(
+                "<p>Use the visual slot for product artwork, status, or preview UI.</p>",
+            ),
+        )
+        .with_title("Visual slot"),
+        "split visual callout",
+    );
+    let footer = render(
+        Statusbar::new("Setup ready", "generic shell"),
+        "split shell footer",
+    );
+    let split = render(
+        SplitShell::new(TrustedHtml::new(&form_panel))
+            .with_top(TrustedHtml::new(
+                r#"<a class="wf-btn ghost" href="/components/migration">Back</a>"#,
+            ))
+            .with_visual(TrustedHtml::new(&visual))
+            .with_footer(TrustedHtml::new(&footer))
+            .with_mode("dark"),
+        "split shell",
+    );
+
+    render(
+        Panel::new("Setup shell composition", TrustedHtml::new(&split)),
+        "split shell panel",
+    )
+}
+
+fn migration_navigation_section() -> String {
+    let contexts = [
+        ContextSwitcherItem::link("Production", "/components/migration")
+            .with_meta("4 apps")
+            .active(),
+        ContextSwitcherItem::link("Sandbox", "/components/migration?sandbox=true")
+            .with_badge(TrustedHtml::new(r#"<span class="wf-tag">test</span>"#)),
+    ];
+    let switcher = render(
+        ContextSwitcher::new("Workspace", "Production", &contexts)
+            .with_meta(TrustedHtml::new(r#"<span class="wf-tag ok">live</span>"#))
+            .open(),
+        "context switcher",
+    );
+    let side_items = [
+        SidenavItem::link("Overview", "/components/migration").active(),
+        SidenavItem::link("Settings", "/components/migration/settings"),
+        SidenavItem::link("Reports", "/components/migration/reports")
+            .muted()
+            .with_badge("Soon"),
+        SidenavItem::link("Billing", "/components/migration/billing")
+            .disabled()
+            .with_coming_soon("coming soon"),
+    ];
+    let side_sections = [SidenavSection::new("Manage", &side_items)];
+    let sidenav = render(Sidenav::new(&side_sections), "sidenav");
+    let body = format!(r#"<div class="wf-g wf-gap-4 wf-max-w-sm">{switcher}{sidenav}</div>"#);
+
+    render(
+        Panel::new("Switcher and sidenav composition", TrustedHtml::new(&body)),
+        "navigation panel",
+    )
 }
 
 fn migration_settings_section() -> String {
@@ -958,18 +1084,83 @@ fn migration_settings_section() -> String {
         "credential status list",
     );
     let confirm = render(
-        ConfirmAction::new("Delete workspace", "/components/migration/delete")
-            .with_message("Destructive actions stay generic.")
-            .with_confirm("Delete this workspace?"),
+        ConfirmAction::new("Remove item", "/components/migration/remove")
+            .with_message("Guarded actions stay generic.")
+            .with_confirm("Remove this item?"),
         "confirm action",
     );
     let body = format!("{inline}{copy}{status_list}{confirm}");
 
     render(
-        SettingsSection::new("Settings and credentials", TrustedHtml::new(&body))
-            .with_description("Generic account, credential, token, and danger-zone composition.")
+        SettingsSection::new("Settings and value display", TrustedHtml::new(&body))
+            .with_description("Generic settings, copyable values, and guarded actions.")
             .danger(),
         "settings section",
+    )
+}
+
+fn migration_sensitive_value_section() -> String {
+    let secret = render(
+        SecretValue::new("Generated value", "gallery-value", "wf_live_example_value")
+            .revealed()
+            .with_button_label("Copy value")
+            .with_warning("Store generated values before leaving this screen.")
+            .with_help(TrustedHtml::new(
+                "<p>Lifecycle and disclosure rules belong in the consumer application.</p>",
+            )),
+        "secret value",
+    );
+    let checklist_items = [
+        ChecklistItem::ok("Domain verified")
+            .with_description("Records were checked by the host app."),
+        ChecklistItem::warn("Rotation window").with_status_label("review"),
+        ChecklistItem::info("Notification channel").with_status_label("optional"),
+    ];
+    let checklist = render(Checklist::new(&checklist_items), "checklist");
+    let codes = ["F4KC-9T7Q", "2F8M-QP1D", "N8K3-VW6R", "7J2H-L0PS"];
+    let code_grid = render(
+        CodeGrid::new(&codes).with_label("One-time codes"),
+        "code grid",
+    );
+    let strength = render(
+        StrengthMeter::new(3, 4, "Strong")
+            .with_label("Signal strength")
+            .with_feedback(FeedbackKind::Ok)
+            .live(),
+        "strength meter",
+    );
+    let body = format!("{secret}{checklist}{code_grid}{strength}");
+
+    render(
+        SettingsSection::new("Sensitive value displays", TrustedHtml::new(&body))
+            .with_description("Reusable display components without policy or scoring logic."),
+        "sensitive display section",
+    )
+}
+
+fn migration_snippet_section() -> String {
+    let block = render(
+        CodeBlock::new("cargo add wavefunk-ui --features axum")
+            .with_label("Install")
+            .with_language("shell")
+            .with_copy_target("gallery-install-command"),
+        "code block",
+    );
+    let tabs = [
+        SnippetTab::new(
+            "Rust",
+            r#"let button = wavefunk_ui::components::Button::primary("Save");"#,
+        )
+        .with_language("rust")
+        .active(),
+        SnippetTab::new("Shell", "direnv exec . cargo test").with_language("shell"),
+    ];
+    let snippets = render(SnippetTabs::new("gallery-snippets", &tabs), "snippet tabs");
+    let body = format!("{block}{snippets}");
+
+    render(
+        Panel::new("Technical content blocks", TrustedHtml::new(&body)),
+        "snippet panel",
     )
 }
 

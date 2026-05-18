@@ -87,17 +87,23 @@ pub struct AppShell<'a> {
     pub title: &'a str,
     pub app_name: &'a str,
     pub mode: &'a str,
+    pub html_attrs: &'a [HtmlAttr<'a>],
+    pub mode_locked: bool,
     pub density_class: &'a str,
     pub asset_base_path: &'a str,
+    pub brand_href: Option<&'a str>,
     pub head_html: Option<TrustedHtml<'a>>,
     pub nav_html: &'a str,
     pub breadcrumbs_html: Option<TrustedHtml<'a>>,
     pub topbar_html: Option<TrustedHtml<'a>>,
+    pub page_header_html: Option<TrustedHtml<'a>>,
     pub actions_html: &'a str,
     pub content_html: &'a str,
+    pub main_class: &'a str,
     pub profile: Option<SidebarProfile<'a>>,
     pub status_left: &'a str,
     pub status_right: &'a str,
+    pub footer_html: Option<TrustedHtml<'a>>,
     pub include_htmx_sse: bool,
     pub scripts_html: Option<TrustedHtml<'a>>,
 }
@@ -108,17 +114,23 @@ impl<'a> AppShell<'a> {
             title,
             app_name,
             mode: "dark",
+            html_attrs: &[],
+            mode_locked: false,
             density_class: "density-dense",
             asset_base_path: assets::DEFAULT_BASE_PATH,
+            brand_href: None,
             head_html: None,
             nav_html: "",
             breadcrumbs_html: None,
             topbar_html: None,
+            page_header_html: None,
             actions_html: "",
             content_html,
+            main_class: "",
             profile: None,
             status_left: app_name,
             status_right: "",
+            footer_html: None,
             include_htmx_sse: false,
             scripts_html: None,
         }
@@ -126,6 +138,16 @@ impl<'a> AppShell<'a> {
 
     pub const fn with_mode(mut self, mode: &'a str) -> Self {
         self.mode = mode;
+        self
+    }
+
+    pub const fn with_html_attrs(mut self, html_attrs: &'a [HtmlAttr<'a>]) -> Self {
+        self.html_attrs = html_attrs;
+        self
+    }
+
+    pub const fn mode_locked(mut self) -> Self {
+        self.mode_locked = true;
         self
     }
 
@@ -152,6 +174,11 @@ impl<'a> AppShell<'a> {
         self
     }
 
+    pub const fn with_brand_href(mut self, brand_href: &'a str) -> Self {
+        self.brand_href = Some(brand_href);
+        self
+    }
+
     pub const fn with_head(mut self, head_html: TrustedHtml<'a>) -> Self {
         self.head_html = Some(head_html);
         self
@@ -172,8 +199,21 @@ impl<'a> AppShell<'a> {
         self
     }
 
+    pub const fn with_page_header(mut self, page_header_html: TrustedHtml<'a>) -> Self {
+        self.page_header_html = Some(page_header_html);
+        if self.main_class.is_empty() {
+            self.main_class = "has-header";
+        }
+        self
+    }
+
     pub const fn with_actions(mut self, actions_html: &'a str) -> Self {
         self.actions_html = actions_html;
+        self
+    }
+
+    pub const fn with_main_class(mut self, main_class: &'a str) -> Self {
+        self.main_class = main_class;
         self
     }
 
@@ -185,6 +225,11 @@ impl<'a> AppShell<'a> {
     pub const fn with_status(mut self, status_left: &'a str, status_right: &'a str) -> Self {
         self.status_left = status_left;
         self.status_right = status_right;
+        self
+    }
+
+    pub const fn with_footer(mut self, footer_html: TrustedHtml<'a>) -> Self {
+        self.footer_html = Some(footer_html);
         self
     }
 
@@ -212,6 +257,14 @@ impl<'a> AppShell<'a> {
 
     pub fn script_link(&self) -> String {
         html::script_link(self.asset_base_path)
+    }
+
+    pub fn main_class_name(&self) -> String {
+        if self.main_class.is_empty() {
+            "wf-main".to_owned()
+        } else {
+            format!("wf-main {}", self.main_class)
+        }
     }
 }
 
@@ -322,6 +375,36 @@ mod tests {
         assert!(html.contains(r#"<span aria-current="page">Deploy</span>"#));
         assert!(html.contains(r#"<button class="wf-btn">Run</button>"#));
         assert!(!html.contains(r#"<span aria-current="page">Wave Funk</span>"#));
+    }
+
+    #[test]
+    fn app_shell_supports_locked_mode_brand_link_main_modifiers_and_footer_slot() {
+        let html_attrs = [HtmlAttr::new("data-region", "eu <north>")];
+        let html = AppShell::new("Title", "Wave <Funk>", "<section>Content</section>")
+            .with_html_attrs(&html_attrs)
+            .mode_locked()
+            .with_brand_href("/home?team=<core>")
+            .with_main_class("has-header has-tablewrap")
+            .with_page_header(TrustedHtml::new(
+                r#"<section class="wf-pageheader"><h1>Deployments</h1></section>"#,
+            ))
+            .with_footer(TrustedHtml::new(
+                r#"<footer class="wf-modeline"><span class="wf-ml-seg">Ready</span></footer>"#,
+            ))
+            .render()
+            .unwrap();
+
+        assert!(html.contains(r#"data-mode-locked"#));
+        assert!(html.contains(r#"data-region="eu "#));
+        assert!(!html.contains(r#"data-region="eu <north>""#));
+        assert!(html.contains(r#"<a class="wf-brand-name" href="/home?team="#));
+        assert!(!html.contains(r#"href="/home?team=<core>""#));
+        assert!(html.contains(">Wave "));
+        assert!(!html.contains(">Wave <Funk><"));
+        assert!(html.contains(r#"class="wf-main has-header has-tablewrap""#));
+        assert!(html.contains(r#"<section class="wf-pageheader"><h1>Deployments</h1></section>"#));
+        assert!(html.contains(r#"<footer class="wf-modeline">"#));
+        assert!(!html.contains(r#"<div class="wf-statusbar wf-hair">"#));
     }
 
     #[test]

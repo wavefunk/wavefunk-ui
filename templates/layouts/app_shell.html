@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-mode="{{ mode }}">
+<html lang="en" data-mode="{{ mode }}"{% if mode_locked %} data-mode-locked{% endif %}{% for attr in html_attrs %} {{ attr.name }}="{{ attr.value }}"{% endfor %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,12 @@
   <div class="wf-shell">
     <aside class="wf-sidebar">
       <div class="wf-brand">
+        {%- match brand_href -%}
+        {%- when Some with (href) -%}
+        <a class="wf-brand-name" href="{{ href }}">{{ app_name }}</a>
+        {%- when None -%}
         <span class="wf-brand-name">{{ app_name }}</span>
+        {%- endmatch -%}
       </div>
       <nav class="wf-nav-list" id="app-nav">
         {{ nav_html|safe }}
@@ -37,7 +42,7 @@
       {%- endmatch -%}
     </aside>
 
-    <div class="wf-main">
+    <div class="{{ self.main_class_name() }}">
       {%- match topbar_html -%}
       {%- when Some with (html) -%}
       {{ html }}
@@ -56,15 +61,26 @@
       </header>
       {%- endmatch -%}
 
+      {%- match page_header_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
+      {%- endmatch -%}
+
       <main class="wf-scroll">
         {{ content_html|safe }}
       </main>
 
+      {%- match footer_html -%}
+      {%- when Some with (html) -%}
+      {{ html }}
+      {%- when None -%}
       <div class="wf-statusbar wf-hair">
         <span>{{ status_left }}</span>
         <span class="wf-grow"></span>
         <span>{{ status_right }}</span>
       </div>
+      {%- endmatch -%}
     </div>
   </div>
 

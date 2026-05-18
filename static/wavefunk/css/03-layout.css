@@ -416,6 +416,48 @@ body.wf-app { overflow: hidden; height: 100vh; }
 .wf-docs-pager-t { font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--fg-strong); text-transform: uppercase; }
 .wf-docs-pager a.next { text-align: right; }
 
+/* -- Generic split shell --------------------------------------------------- */
+.wf-split-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+  background: var(--bg);
+  color: var(--fg);
+}
+.wf-split-shell-visual {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-7);
+  border-right: var(--border-1) solid var(--hairline);
+  background: var(--bg-splash);
+  overflow: hidden;
+}
+.wf-split-shell-content {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--space-6) var(--space-7);
+}
+.wf-split-shell-top,
+.wf-split-shell-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.wf-split-shell-main {
+  width: 100%;
+  max-width: 440px;
+  margin: auto 0;
+}
+@media (max-width: 900px) {
+  .wf-split-shell { grid-template-columns: 1fr; }
+  .wf-split-shell-visual { display: none; }
+  .wf-split-shell-content { padding: var(--space-5); }
+}
+
 /* ── Auth split ────────────────────────────────────────────────────────── */
 .wf-auth {
   min-height: 100vh;
